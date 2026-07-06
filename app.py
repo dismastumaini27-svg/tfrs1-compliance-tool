@@ -225,8 +225,28 @@ GLOBAL_QUESTIONS = [
 
 # ---------- FILE & SESSION MANAGEMENT ----------
 DATA_FILE = "tfrs_data.csv"
+SYNTHESIS_FILE = "synthesis_data.csv"
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+# ---------- SYNTHESIS DATA FUNCTIONS ----------
+def load_synthesis():
+    if os.path.exists(SYNTHESIS_FILE):
+        df = pd.read_csv(SYNTHESIS_FILE)
+        # Ensure all groups exist
+        for group in TFRS_GROUPS.keys():
+            if group not in df['Group'].values:
+                df = pd.concat([df, pd.DataFrame([{'Group': group, 'Synthesis': ''}])], ignore_index=True)
+        return df
+    else:
+        # Create default empty synthesis for all groups
+        rows = [{'Group': group, 'Synthesis': ''} for group in TFRS_GROUPS.keys()]
+        df = pd.DataFrame(rows)
+        df.to_csv(SYNTHESIS_FILE, index=False)
+        return df
+
+def save_synthesis(df):
+    df.to_csv(SYNTHESIS_FILE, index=False)
 
 # ---------- UPDATED load_data() WITH SMART UPGRADE ----------
 def load_data():
@@ -299,6 +319,8 @@ st.title("🏛 TFRS 1 Report Builder – Ministry of Minerals")
 
 if 'data' not in st.session_state:
     st.session_state.data = load_data()
+if 'synthesis' not in st.session_state:
+    st.session_state.synthesis = load_synthesis()
 if 'uploaded_files' not in st.session_state:
     st.session_state.uploaded_files = {}
 
@@ -436,38 +458,123 @@ with st.form(key="entry_form"):
         save_data(st.session_state.data)
         st.success("✅ Data saved successfully!")
 
-# ---------- DASHBOARD ----------
+# ---------- FIXED DASHBOARD (Corrected Calculation) ----------
 st.markdown("---")
 st.header("📊 Live Compliance Dashboard")
+
+# Information box explaining the new metric
+st.info("💡 **Compliance %** is calculated as (Yes / Total Questions). To get 100%, you must answer 'Yes' to all questions. 'NA' items do not count toward the score, encouraging full completion.")
+
 all_depts = st.session_state.data["Department"].unique()
 summary = []
+
 for dept in all_depts:
     if dept == "**CORPORATE / GENERAL**":
         continue
+    
     dept_filter = st.session_state.data[st.session_state.data["Department"] == dept]
     total = len(dept_filter)
     y_count = len(dept_filter[dept_filter["Status"] == "Y"])
     n_count = len(dept_filter[dept_filter["Status"] == "N"])
     na_count = len(dept_filter[dept_filter["Status"] == "NA"])
-    compliance = (y_count / (y_count + n_count) * 100) if (y_count + n_count) > 0 else 0
-    completion = ((y_count + n_count + na_count) / total) * 100
+    
+    # ----- NEW STRICT COMPLIANCE METRIC -----
+    # Compliance % = Yes / Total Questions. Forces departments to answer all questions to get 100%.
+    compliance = (y_count / total) * 100 if total > 0 else 0
+    
+    # Completion % = (Yes + No + NA) / Total. Shows how much of the form is filled out.
+    completion = ((y_count + n_count + na_count) / total) * 100 if total > 0 else 0
+    
+    # Old "Applicable" metric (just for reference)
+    applicable_compliance = (y_count / (y_count + n_count) * 100) if (y_count + n_count) > 0 else 0
+    
     summary.append({
         "Department": dept,
         "Yes": y_count,
         "No": n_count,
         "NA": na_count,
-        "Compliance %": round(compliance, 1),
-        "Completion %": round(completion, 1)
+        "Compliance % (Strict)": round(compliance, 1),   # This is the one shown in the chart
+        "Completion %": round(completion, 1),
+        "Applicable % (Y/(Y+N))": round(applicable_compliance, 1)  # Just for info
     })
+
 df_summary = pd.DataFrame(summary)
+
+# Display the table
 st.dataframe(df_summary, width='stretch', hide_index=True)
-st.bar_chart(df_summary.set_index("Department")["Compliance %"])
+
+# Display the Bar Chart (Now using the Strict metric)
+st.subheader("Overall Compliance Progress by Department (%)")
+st.bar_chart(df_summary.set_index("Department")["Compliance % (Strict)"])
+
+st.caption("⚠️ Note: 'Applicable %' shows compliance only among answered applicable items, but the main progress bar above requires 'Yes' on ALL questions.")
+
+# ---------- NEW: ADMIN CONSOLIDATION / SYNTHESIS PANEL ----------
+st.markdown("---")
+st.header("🔧 Admin Consolidation / Synthesis (for Final Report)")
+
+with st.expander("📝 Admin: Synthesize Departmental Inputs into Cohesive TFRS Narratives (Password: admin123)"):
+    synth_pass = st.text_input("Enter Admin Password to edit synthesis", type="password", key="synth_pass")
+    
+    if synth_pass == "admin123":
+        st.success("✅ Admin access granted. Edit the synthesis text below. This polished text will REPLACE the raw departmental bullet points in the final Word report.")
+        st.info("📌 **What to fill here:** Read all the departmental raw narratives shown below for each group. Then, rewrite them into a single, professional, flowing paragraph that captures the whole story of the Ministry for that TFRS section.")
+        
+        # Show raw input for reference
+        st.subheader("📄 Raw Departmental Inputs (For Reference)")
+        for group in TFRS_GROUPS.keys():
+            group_data = st.session_state.data[
+                (st.session_state.data["Group"] == group) &
+                (st.session_state.data["Department"] != "**CORPORATE / GENERAL**")
+            ]
+            if not group_data.empty:
+                with st.expander(f"View Raw Data for {group}"):
+                    for dept in DEPARTMENTS:
+                        dept_group = group_data[group_data["Department"] == dept]
+                        if not dept_group.empty:
+                            st.markdown(f"**{dept}:**")
+                            for _, row in dept_group.iterrows():
+                                st.caption(f"Q: {row['Question']}")
+                                st.write(row['Narrative'] if row['Narrative'] else "⚠ No data provided.")
+                            st.divider()
+        
+        # Synthesis Editor
+        st.subheader("✍️ Write Your Polished Synthesis Paragraphs")
+        st.caption("These will be used in the final report. Leave blank to fall back to raw departmental inputs.")
+        
+        synth_df = st.session_state.synthesis.copy()
+        updated_groups = {}
+        
+        for group in TFRS_GROUPS.keys():
+            current_text = synth_df[synth_df['Group'] == group]['Synthesis'].values[0] if not synth_df[synth_df['Group'] == group].empty else ""
+            new_text = st.text_area(
+                f"Synthesis for {group}",
+                value=current_text,
+                height=150,
+                key=f"synth_area_{group}",
+                placeholder="Write a cohesive paragraph here. E.g., 'The Ministry operates in a dynamic regulatory environment...'"
+            )
+            updated_groups[group] = new_text
+        
+        if st.button("💾 Save All Synthesis Text"):
+            for group, text in updated_groups.items():
+                idx = st.session_state.synthesis[st.session_state.synthesis['Group'] == group].index
+                if not idx.empty:
+                    st.session_state.synthesis.at[idx[0], 'Synthesis'] = text
+                else:
+                    st.session_state.synthesis = pd.concat([st.session_state.synthesis, pd.DataFrame([{'Group': group, 'Synthesis': text}])], ignore_index=True)
+            save_synthesis(st.session_state.synthesis)
+            st.success("✅ All synthesis text saved successfully! These will be used in the final report.")
+            st.rerun()
+            
+    elif synth_pass:
+        st.error("Wrong password.")
 
 # ---------- REPORT GENERATOR ----------
 st.markdown("---")
 st.header("📄 Generate Draft TFRS 1 Report")
 
-st.warning("The report compiles all **Narrative** fields, grouped by TFRS sections. Ensure all departments have saved their narratives.")
+st.warning("The report compiles narratives. If Admin Synthesis text exists, it will be used instead of raw departmental inputs for each TFRS section.")
 
 if st.button("📝 Generate Consolidated Draft Report (Word)"):
     output = io.BytesIO()
@@ -484,7 +591,7 @@ if st.button("📝 Generate Consolidated Draft Report (Word)"):
         doc.add_heading('1. Executive Summary', level=2)
         doc.add_paragraph(f'Compliance status across {len(df_summary)} departments:')
         for _, row in df_summary.iterrows():
-            doc.add_paragraph(f'• {row["Department"]}: {row["Compliance %"]}% compliance (Yes: {row["Yes"]}, No: {row["No"]}, N/A: {row["NA"]})')
+            doc.add_paragraph(f'• {row["Department"]}: {row["Compliance % (Strict)"]}% compliance (Yes: {row["Yes"]}, No: {row["No"]}, N/A: {row["NA"]})')
         doc.add_paragraph('')
         
         # 2. Corporate / General Section
@@ -498,30 +605,42 @@ if st.button("📝 Generate Consolidated Draft Report (Word)"):
                     doc.add_paragraph(f'Attachments: {row["Attachments"]}')
         doc.add_paragraph('')
         
-        # 3. Grouped by TFRS Sections (across all departments)
+        # 3. Grouped by TFRS Sections (Using Synthesis if available)
         doc.add_heading('3. Operational and Financial Review by TFRS Section', level=2)
+        synth_df = st.session_state.synthesis
+        
         for group in TFRS_GROUPS.keys():
-            group_data = st.session_state.data[
-                (st.session_state.data["Group"] == group) &
-                (st.session_state.data["Department"] != "**CORPORATE / GENERAL**")
-            ]
-            if group_data.empty:
-                continue
             doc.add_heading(f'3.{list(TFRS_GROUPS.keys()).index(group)+1} {group}', level=3)
             doc.add_paragraph(TFRS_GROUPS[group])
-            for dept in DEPARTMENTS:
-                dept_group = group_data[group_data["Department"] == dept]
-                if dept_group.empty:
-                    continue
-                doc.add_heading(f'{dept}:', level=4)
-                for _, row in dept_group.iterrows():
-                    doc.add_paragraph(f'• {row["Question"]}')
-                    if row["Narrative"]:
-                        doc.add_paragraph(row["Narrative"], style='List Bullet')
-                    else:
-                        doc.add_paragraph('⚠ Not provided.', style='List Bullet')
-                    if row["Attachments"]:
-                        doc.add_paragraph(f'Evidence: {row["Attachments"]}', style='List Bullet')
+            
+            # Check if synthesis exists for this group
+            synth_row = synth_df[synth_df['Group'] == group]
+            if not synth_row.empty and synth_row.iloc[0]['Synthesis'] and synth_row.iloc[0]['Synthesis'].strip():
+                # USE THE ADMIN'S POLISHED SYNTHESIS
+                doc.add_paragraph(synth_row.iloc[0]['Synthesis'], style='List Bullet')
+                doc.add_paragraph("*(This section has been consolidated by Management from departmental inputs.)*", style='List Bullet')
+            else:
+                # FALLBACK TO RAW DEPARTMENTAL INPUTS
+                group_data = st.session_state.data[
+                    (st.session_state.data["Group"] == group) &
+                    (st.session_state.data["Department"] != "**CORPORATE / GENERAL**")
+                ]
+                if group_data.empty:
+                    doc.add_paragraph('⚠ No data provided for this section.')
+                else:
+                    for dept in DEPARTMENTS:
+                        dept_group = group_data[group_data["Department"] == dept]
+                        if dept_group.empty:
+                            continue
+                        doc.add_heading(f'{dept}:', level=4)
+                        for _, row in dept_group.iterrows():
+                            doc.add_paragraph(f'• {row["Question"]}')
+                            if row["Narrative"]:
+                                doc.add_paragraph(row["Narrative"], style='List Bullet')
+                            else:
+                                doc.add_paragraph('⚠ Not provided.', style='List Bullet')
+                            if row["Attachments"]:
+                                doc.add_paragraph(f'Evidence: {row["Attachments"]}', style='List Bullet')
             doc.add_paragraph('')
         
         doc.save(output)
@@ -545,25 +664,33 @@ if st.button("📝 Generate Consolidated Draft Report (Word)"):
                     output.write(f"Attachments: {row['Attachments']}\n".encode())
                 output.write("\n".encode())
         
+        synth_df = st.session_state.synthesis
         for group in TFRS_GROUPS.keys():
-            group_data = st.session_state.data[
-                (st.session_state.data["Group"] == group) &
-                (st.session_state.data["Department"] != "**CORPORATE / GENERAL**")
-            ]
-            if group_data.empty:
-                continue
             output.write(f"\n\n{group}\n".encode())
             output.write("="*len(group) + "\n".encode())
-            for dept in DEPARTMENTS:
-                dept_group = group_data[group_data["Department"] == dept]
-                if dept_group.empty:
-                    continue
-                output.write(f"\n{dept}:\n".encode())
-                for _, row in dept_group.iterrows():
-                    output.write(f"  - {row['Question']}\n".encode())
-                    output.write(f"    {row['Narrative'] if row['Narrative'] else 'N/A'}\n".encode())
-                    if row['Attachments']:
-                        output.write(f"    Evidence: {row['Attachments']}\n".encode())
+            
+            synth_row = synth_df[synth_df['Group'] == group]
+            if not synth_row.empty and synth_row.iloc[0]['Synthesis'] and synth_row.iloc[0]['Synthesis'].strip():
+                output.write(synth_row.iloc[0]['Synthesis'].encode())
+                output.write("\n\n*Consolidated by Management.*\n".encode())
+            else:
+                group_data = st.session_state.data[
+                    (st.session_state.data["Group"] == group) &
+                    (st.session_state.data["Department"] != "**CORPORATE / GENERAL**")
+                ]
+                if group_data.empty:
+                    output.write("No data provided.\n".encode())
+                else:
+                    for dept in DEPARTMENTS:
+                        dept_group = group_data[group_data["Department"] == dept]
+                        if dept_group.empty:
+                            continue
+                        output.write(f"\n{dept}:\n".encode())
+                        for _, row in dept_group.iterrows():
+                            output.write(f"  - {row['Question']}\n".encode())
+                            output.write(f"    {row['Narrative'] if row['Narrative'] else 'N/A'}\n".encode())
+                            if row['Attachments']:
+                                output.write(f"    Evidence: {row['Attachments']}\n".encode())
         
         mime_type = "text/plain"
         file_ext = "txt"
@@ -574,4 +701,4 @@ if st.button("📝 Generate Consolidated Draft Report (Word)"):
         file_name=f"TFRS1_Draft_Report_{datetime.now().strftime('%Y%m%d')}.{file_ext}",
         mime=mime_type
     )
-    st.success("Draft report generated! Review and edit the narrative fields for missing data.")
+    st.success("Draft report generated! If synthesis exists, it was used instead of raw departmental data.")
