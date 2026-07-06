@@ -41,7 +41,7 @@ TFRS_GROUPS = {
     "J. Compliance & Responsibility": "Statement of responsibility, compliance with TFRS 1, publication, and approvals."
 }
 
-# ---------- DEPARTMENT-SPECIFIC QUESTIONS (Properly phrased) ----------
+# ---------- DEPARTMENT-SPECIFIC QUESTIONS (Properly phrased as QUESTIONS) ----------
 DEPARTMENT_QUESTIONS = {
     "Human Resource": [
         {"group": "A. Nature of Operation", "question": "What is the role of HR in supporting the Ministry's operational mandate, and how is it structured?",
@@ -228,16 +228,26 @@ DATA_FILE = "tfrs_data.csv"
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+# ---------- UPDATED load_data() WITH SMART UPGRADE ----------
 def load_data():
     if os.path.exists(DATA_FILE):
         df = pd.read_csv(DATA_FILE)
-        # Add missing columns if upgrading from old version
+        
+        # ----- SMART UPGRADE: Detect old statement format and rebuild -----
+        # If the file contains the OLD statement "Service delivery targets", delete it and rebuild.
+        if len(df) > 0 and "Service delivery targets (outputs) and performance indicators" in df["Question"].values:
+            os.remove(DATA_FILE)
+            return create_new_data()
+        # -----------------------------------------------------------------
+
+        # Add missing columns if upgrading from an older version
         if 'Group' not in df.columns:
             df['Group'] = ''
         if 'Attachments' not in df.columns:
             df['Attachments'] = ''
         if 'Narrative' not in df.columns:
             df['Narrative'] = ''
+        
         df['Status'] = df['Status'].fillna('NA')
         df['Comments'] = df['Comments'].fillna('')
         df['Narrative'] = df['Narrative'].fillna('')
