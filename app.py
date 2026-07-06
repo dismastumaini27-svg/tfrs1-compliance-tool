@@ -27,7 +27,7 @@ DEPARTMENTS = [
     "Internal Auditing"
 ]
 
-# Define TFRS Groups for consistent grouping
+# Define TFRS Groups for consistent grouping (USED ONLY FOR THE FINAL REPORT)
 TFRS_GROUPS = {
     "A. Nature of Operation": "Description of the industry, markets, products, services, and regulatory environment.",
     "B. Objectives, Strategies & Operating Model": "Entity's strategic objectives, resource allocation plans, and operating model (inputs/outputs/outcomes).",
@@ -41,185 +41,185 @@ TFRS_GROUPS = {
     "J. Compliance & Responsibility": "Statement of responsibility, compliance with TFRS 1, publication, and approvals."
 }
 
-# ---------- DEPARTMENT-SPECIFIC QUESTIONS WITH GROUPS ----------
+# ---------- DEPARTMENT-SPECIFIC QUESTIONS (Properly phrased) ----------
 DEPARTMENT_QUESTIONS = {
     "Human Resource": [
-        {"group": "A. Nature of Operation", "question": "Describe the role of HR in supporting the Ministry's operational mandate.",
-         "guidance": "Outline staffing levels, structure, and key HR functions (recruitment, payroll, training)."},
-        {"group": "C. Resources", "question": "Staff recruitment, retention, and development strategies",
-         "guidance": "Provide vacancy rates, turnover %, training days per staff, and strategic plans."},
-        {"group": "C. Resources", "question": "Employee welfare initiatives (health, pension, safety)",
+        {"group": "A. Nature of Operation", "question": "What is the role of HR in supporting the Ministry's operational mandate, and how is it structured?",
+         "guidance": "Outline staffing levels, organizational structure, and key HR functions (recruitment, payroll, training)."},
+        {"group": "C. Resources", "question": "What are the current staff recruitment, retention, and development strategies, and what are the key metrics?",
+         "guidance": "Provide vacancy rates, turnover %, training days per staff, and reference to strategic plans."},
+        {"group": "C. Resources", "question": "What employee welfare initiatives (health, pension, safety) are in place, and what is the coverage?",
          "guidance": "Coverage percentages, budget allocated, specific schemes (PPF/NSSF)."},
-        {"group": "C. Resources", "question": "Gender parity and equal opportunity policies",
+        {"group": "C. Resources", "question": "How does the department ensure gender parity and equal opportunity in employment and promotion?",
          "guidance": "Current gender ratio (M/F). Recruitment/promotion by gender."},
-        {"group": "C. Resources", "question": "Training and career progression for persons with disabilities",
+        {"group": "C. Resources", "question": "What training and career progression opportunities are provided for persons with disabilities?",
          "guidance": "Numbers of disabled staff recruited, trained, promoted."},
-        {"group": "E. Stakeholder Relationships", "question": "Grievance handling mechanisms for staff",
+        {"group": "E. Stakeholder Relationships", "question": "What grievance handling mechanisms are in place for staff, and what are the resolution statistics?",
          "guidance": "Number of grievances lodged, resolved, average resolution time."},
-        {"group": "G. Performance & KPIs", "question": "Key HR performance metrics",
+        {"group": "G. Performance & KPIs", "question": "What are the key HR performance metrics, and what do the trends show?",
          "guidance": "Turnover rate, cost per hire, staff satisfaction score, vacancy rate."},
-        {"group": "I. Forward-looking & Future Prospects", "question": "Major HR trends and strategic response (next 1-3 years)",
+        {"group": "I. Forward-looking & Future Prospects", "question": "What major HR trends are anticipated in the next 1-3 years, and what is the strategic response?",
          "guidance": "Digital HR, talent shortages, remote work, skills gaps."}
     ],
     "Monitoring & Evaluation": [
-        {"group": "A. Nature of Operation", "question": "Describe the M&E function and its role in tracking Ministry performance.",
+        {"group": "A. Nature of Operation", "question": "How is the M&E function structured, and what is its role in tracking Ministry performance?",
          "guidance": "Outline the M&E framework, reporting cycles, and key stakeholders."},
-        {"group": "G. Performance & KPIs", "question": "Service delivery targets (outputs) and performance indicators",
+        {"group": "G. Performance & KPIs", "question": "What are the actual service delivery targets (outputs) achieved, and what performance indicators were used?",
          "guidance": "Actual outputs vs. targets (e.g., inspections, reports produced)."},
-        {"group": "G. Performance & KPIs", "question": "Efficiency of resource utilization (inputs vs outputs)",
+        {"group": "G. Performance & KPIs", "question": "How efficiently were resources utilized in terms of inputs versus outputs, and what ratios were achieved?",
          "guidance": "Cost per output, productivity ratios, budget absorption rate."},
-        {"group": "E. Stakeholder Relationships", "question": "Stakeholder feedback and citizen satisfaction",
+        {"group": "E. Stakeholder Relationships", "question": "How has stakeholder feedback and citizen satisfaction been incorporated, and what were the scores?",
          "guidance": "Satisfaction scores, feedback response rates, actions taken."},
-        {"group": "G. Performance & KPIs", "question": "Achievement of intended societal impacts (outcomes)",
+        {"group": "G. Performance & KPIs", "question": "To what extent have the intended societal impacts (outcomes) been achieved, and what is the evidence?",
          "guidance": "Outcome indicators (e.g., health improvements, economic growth)."},
-        {"group": "H. Corporate Governance", "question": "Implementation status of previous M&E recommendations",
+        {"group": "H. Corporate Governance", "question": "What is the implementation status of previous M&E recommendations (closed, in progress, not implemented)?",
          "guidance": "Number closed, in progress, not implemented."},
-        {"group": "G. Performance & KPIs", "question": "Key performance indicators (KPIs) tracked consistently",
+        {"group": "G. Performance & KPIs", "question": "Which Key Performance Indicators (KPIs) are tracked consistently, and what are the trends compared to targets?",
          "guidance": "Targets vs. actuals for top 5 KPIs."},
-        {"group": "I. Forward-looking & Future Prospects", "question": "Major M&E trends and strategic response (next 1-3 years)",
+        {"group": "I. Forward-looking & Future Prospects", "question": "What major M&E trends are anticipated in the next 1-3 years, and what is the strategic response?",
          "guidance": "New data collection tools, impact evaluation, real-time reporting."}
     ],
     "Information & Communication Technology": [
-        {"group": "A. Nature of Operation", "question": "Describe the ICT function and its critical role in Ministry operations.",
+        {"group": "A. Nature of Operation", "question": "How is the ICT function structured, and what critical services does it provide to the Ministry?",
          "guidance": "Outline systems supported, user base, and key services (email, networks, databases)."},
-        {"group": "D. Principal Risks & Uncertainties", "question": "Cybersecurity risks, data privacy measures, and IT policies",
+        {"group": "D. Principal Risks & Uncertainties", "question": "What are the key cybersecurity risks, data privacy measures, and IT policies in place?",
          "guidance": "Number of incidents, compliance level, policy version."},
-        {"group": "B. Objectives, Strategies & Operating Model", "question": "Digital transformation strategy and implementation progress",
+        {"group": "B. Objectives, Strategies & Operating Model", "question": "What is the digital transformation strategy, and what progress has been made in implementation?",
          "guidance": "Milestones achieved (systems launched, automation, adoption rates)."},
-        {"group": "D. Principal Risks & Uncertainties", "question": "Business continuity and disaster recovery plans",
+        {"group": "D. Principal Risks & Uncertainties", "question": "What business continuity and disaster recovery plans are in place, and when were they last tested?",
          "guidance": "Last testing date, Recovery Time Objective (RTO) achieved."},
-        {"group": "F. Capital Structure, Treasury & Liquidity", "question": "Costs and benefits of major IT investments",
+        {"group": "F. Capital Structure, Treasury & Liquidity", "question": "What are the costs and benefits of major IT investments, and what is the ROI?",
          "guidance": "Total capex/opex, ROI, efficiency gains (e.g., time reduced by X%)."},
-        {"group": "C. Resources", "question": "IT asset inventory and management",
+        {"group": "C. Resources", "question": "What is the current IT asset inventory, and how is it managed?",
          "guidance": "Total assets, age profile, replacement value, disposal records."},
-        {"group": "G. Performance & KPIs", "question": "System downtime incidents and resolutions",
+        {"group": "G. Performance & KPIs", "question": "What is the system downtime record, and how quickly are incidents resolved?",
          "guidance": "Number of outages, average resolution time, root causes."},
-        {"group": "I. Forward-looking & Future Prospects", "question": "Major IT trends and strategic response (next 1-3 years)",
+        {"group": "I. Forward-looking & Future Prospects", "question": "What major ICT trends are anticipated in the next 1-3 years, and what is the strategic response?",
          "guidance": "Cloud migration, AI, mobile apps, data analytics, remote work support."}
     ],
     "Government Communication Unit": [
-        {"group": "A. Nature of Operation", "question": "Describe the role of the Government Communication Unit.",
+        {"group": "A. Nature of Operation", "question": "What is the role of the Government Communication Unit, and what are its core functions?",
          "guidance": "Outline public engagement, media relations, and information dissemination."},
-        {"group": "B. Objectives, Strategies & Operating Model", "question": "Communication strategies and public engagement plans",
+        {"group": "B. Objectives, Strategies & Operating Model", "question": "What communication strategies and public engagement plans are in place, and what is their reach?",
          "guidance": "Campaigns, events, media engagements, reach (estimated audience)."},
-        {"group": "G. Performance & KPIs", "question": "Dissemination of information to citizens",
+        {"group": "G. Performance & KPIs", "question": "How effectively does the unit disseminate information to citizens, and what are the metrics?",
          "guidance": "Number of press releases, website traffic, social media impressions."},
-        {"group": "E. Stakeholder Relationships", "question": "Mechanisms for handling citizen feedback/complaints",
+        {"group": "E. Stakeholder Relationships", "question": "What mechanisms are in place for handling citizen feedback/complaints, and how effective are they?",
          "guidance": "Feedback volumes, response rates, resolution times."},
-        {"group": "J. Compliance & Responsibility", "question": "Role in transparency and access to information",
+        {"group": "J. Compliance & Responsibility", "question": "How does the unit ensure transparency and access to information in compliance with the law?",
          "guidance": "Number of information requests handled, proactive disclosures."},
-        {"group": "G. Performance & KPIs", "question": "Public awareness campaigns and their effectiveness",
+        {"group": "G. Performance & KPIs", "question": "What public awareness campaigns have been conducted, and what was their effectiveness?",
          "guidance": "Campaign reach, behavior change results, cost per person reached."},
-        {"group": "D. Principal Risks & Uncertainties", "question": "Risks related to misinformation and reputation",
+        {"group": "D. Principal Risks & Uncertainties", "question": "What risks related to misinformation and reputation have been identified, and how are they managed?",
          "guidance": "Number of reputation incidents, media monitoring outcomes."},
-        {"group": "I. Forward-looking & Future Prospects", "question": "Major communication trends and strategic response (next 1-3 years)",
+        {"group": "I. Forward-looking & Future Prospects", "question": "What major communication trends are anticipated in the next 1-3 years, and what is the strategic response?",
          "guidance": "Digital engagement, fake news, citizen journalism, crisis communication."}
     ],
     "Policy & Planning": [
-        {"group": "A. Nature of Operation", "question": "Describe the Policy & Planning function and its strategic role.",
+        {"group": "A. Nature of Operation", "question": "What is the role of the Policy & Planning function, and how does it coordinate with national priorities?",
          "guidance": "Outline policy formulation, planning, and coordination with national priorities."},
-        {"group": "B. Objectives, Strategies & Operating Model", "question": "Alignment of strategic objectives with national development plans",
-         "guidance": "Map specific goals to national indicators (e.g., NDP, Five-Year Plan)."},
-        {"group": "G. Performance & KPIs", "question": "Progress of strategic plan implementation and major milestones",
+        {"group": "B. Objectives, Strategies & Operating Model", "question": "How are the Ministry's strategic objectives aligned with national development plans (e.g., Five-Year Plan)?",
+         "guidance": "Map specific goals to national indicators."},
+        {"group": "G. Performance & KPIs", "question": "What is the progress of strategic plan implementation, and what are the major milestones achieved?",
          "guidance": "Status of each goal (achieved, ongoing, delayed). Milestones reached."},
-        {"group": "A. Nature of Operation", "question": "Legislative and regulatory changes affecting the minerals sector",
+        {"group": "A. Nature of Operation", "question": "What legislative and regulatory changes affecting the minerals sector have occurred, and what is their impact?",
          "guidance": "List new laws/amendments and their expected impact on operations."},
-        {"group": "B. Objectives, Strategies & Operating Model", "question": "Policy development framework and stakeholder consultation",
+        {"group": "B. Objectives, Strategies & Operating Model", "question": "What is the policy development framework, and how are stakeholders consulted?",
          "guidance": "Number of consultations, feedback incorporated."},
-        {"group": "D. Principal Risks & Uncertainties", "question": "Risks related to policy implementation",
+        {"group": "D. Principal Risks & Uncertainties", "question": "What risks are associated with policy implementation, and what mitigation measures are in place?",
          "guidance": "Identify top risks and mitigation measures."},
-        {"group": "I. Forward-looking & Future Prospects", "question": "Major policy trends and strategic response (next 1-3 years)",
+        {"group": "I. Forward-looking & Future Prospects", "question": "What major policy trends are anticipated in the next 1-3 years, and what is the strategic response?",
          "guidance": "New mining codes, environmental regulations, regional integration."}
     ],
     "Procurement": [
-        {"group": "A. Nature of Operation", "question": "Describe the Procurement function and its critical role.",
+        {"group": "A. Nature of Operation", "question": "What is the role of the Procurement function, and what are its critical responsibilities?",
          "guidance": "Outline procurement of goods/services, contract management, and supplier relations."},
-        {"group": "B. Objectives, Strategies & Operating Model", "question": "Strategic procurement plans and annual budgets",
+        {"group": "B. Objectives, Strategies & Operating Model", "question": "What are the strategic procurement plans and annual budgets, and what is the actual spend?",
          "guidance": "Total planned vs. actual spend. Number of tenders planned vs issued."},
-        {"group": "J. Compliance & Responsibility", "question": "Adherence to the Public Procurement Act regulations",
+        {"group": "J. Compliance & Responsibility", "question": "What is the level of adherence to the Public Procurement Act regulations, and are there any breaches?",
          "guidance": "Percentage of tenders fully compliant. Any major breaches/penalties?"},
-        {"group": "G. Performance & KPIs", "question": "Major contracts and supplier performance evaluations",
+        {"group": "G. Performance & KPIs", "question": "What are the major contracts awarded, and how have suppliers performed?",
          "guidance": "Top 5 contracts by value. Supplier scores (e.g., 4.5/5)."},
-        {"group": "D. Principal Risks & Uncertainties", "question": "Risks related to supply chain, fraud, and delays",
+        {"group": "D. Principal Risks & Uncertainties", "question": "What risks related to supply chain, fraud, and delays have been identified, and how are they mitigated?",
          "guidance": "List top risks and controls. Number of fraud incidents."},
-        {"group": "G. Performance & KPIs", "question": "Value-for-money achieved and cost savings",
+        {"group": "G. Performance & KPIs", "question": "What value-for-money and cost savings have been achieved through procurement?",
          "guidance": "Estimated savings from competitive bidding vs. estimated price."},
-        {"group": "J. Compliance & Responsibility", "question": "Sustainable and local content procurement policies",
+        {"group": "J. Compliance & Responsibility", "question": "How are sustainable and local content procurement policies being implemented?",
          "guidance": "Percentage local content, environmental criteria applied."},
-        {"group": "I. Forward-looking & Future Prospects", "question": "Major procurement trends and strategic response (next 1-3 years)",
+        {"group": "I. Forward-looking & Future Prospects", "question": "What major procurement trends are anticipated in the next 1-3 years, and what is the strategic response?",
          "guidance": "e-Procurement, strategic sourcing, green procurement."}
     ],
     "Commissioner for Minerals": [
-        {"group": "A. Nature of Operation", "question": "Describe the Commissioner's mandate in regulating the minerals sector.",
+        {"group": "A. Nature of Operation", "question": "What is the mandate of the Commissioner for Minerals, and what are the core regulatory functions?",
          "guidance": "Outline licensing, inspection, revenue collection, and sector development."},
-        {"group": "G. Performance & KPIs", "question": "Mineral production statistics and royalty collections",
+        {"group": "G. Performance & KPIs", "question": "What are the mineral production statistics and royalty collections, and how do they compare to targets?",
          "guidance": "Tonnes produced (by mineral), total value, royalties collected vs. target."},
-        {"group": "A. Nature of Operation", "question": "Licensing processes and monitoring",
+        {"group": "A. Nature of Operation", "question": "What is the status of licensing processes and monitoring of licensed activities?",
          "guidance": "Number of new/renewed licenses, compliance rate."},
-        {"group": "G. Performance & KPIs", "question": "Inspection and compliance activities",
+        {"group": "G. Performance & KPIs", "question": "What inspection and compliance activities have been carried out, and what were the findings?",
          "guidance": "Number of inspections, findings, enforcement actions."},
-        {"group": "J. Compliance & Responsibility", "question": "Environmental protection and rehabilitation activities",
+        {"group": "J. Compliance & Responsibility", "question": "What environmental protection and rehabilitation activities have been undertaken?",
          "guidance": "Rehabilitation area (ha), number of EIAs, closure plans."},
-        {"group": "G. Performance & KPIs", "question": "Revenue targets vs actual collections",
+        {"group": "G. Performance & KPIs", "question": "How do actual revenue collections compare to targets, and what are the reasons for variances?",
          "guidance": "Variance analysis: reasons for over/under collection."},
-        {"group": "D. Principal Risks & Uncertainties", "question": "Risks related to mining compliance, illegal mining, and revenue leakage",
+        {"group": "D. Principal Risks & Uncertainties", "question": "What risks relate to mining compliance, illegal mining, and revenue leakage, and how are they controlled?",
          "guidance": "Number of illegal mining cases, revenue lost, controls."},
-        {"group": "I. Forward-looking & Future Prospects", "question": "Major minerals sector trends and strategic response (next 1-3 years)",
+        {"group": "I. Forward-looking & Future Prospects", "question": "What major minerals sector trends are anticipated in the next 1-3 years, and what is the strategic response?",
          "guidance": "Global commodity prices, new discoveries, local beneficiation policy."}
     ],
     "Finance & Accounts": [
-        {"group": "F. Capital Structure, Treasury & Liquidity", "question": "Cash flow position and liquidity status",
+        {"group": "F. Capital Structure, Treasury & Liquidity", "question": "What is the current cash flow position and liquidity status of the Ministry?",
          "guidance": "Opening/closing cash balances, cash inflow/outflow, liquidity ratio."},
-        {"group": "G. Performance & KPIs", "question": "Budget absorption and major variances",
+        {"group": "G. Performance & KPIs", "question": "What is the budget absorption rate, and what are the major variances (actual vs planned)?",
          "guidance": "Overall budget execution percentage (>90%?). Explain variances >10%."},
-        {"group": "D. Principal Risks & Uncertainties", "question": "Financial risks (currency, inflation, fraud)",
+        {"group": "D. Principal Risks & Uncertainties", "question": "What financial risks (currency, inflation, fraud) have been identified, and how are they mitigated?",
          "guidance": "Quantify exposure, risk mitigation measures."},
-        {"group": "F. Capital Structure, Treasury & Liquidity", "question": "Treasury policies and management of public funds",
+        {"group": "F. Capital Structure, Treasury & Liquidity", "question": "What treasury policies are in place, and how are public funds managed?",
          "guidance": "Cash management strategies, bank reconciliation status."},
-        {"group": "F. Capital Structure, Treasury & Liquidity", "question": "Significant payments, commitments, and outstanding obligations",
+        {"group": "F. Capital Structure, Treasury & Liquidity", "question": "What significant payments, commitments, and outstanding obligations exist?",
          "guidance": "Large contracts pending, bills, committed funds."},
-        {"group": "F. Capital Structure, Treasury & Liquidity", "question": "Financial impact of major capital projects",
+        {"group": "F. Capital Structure, Treasury & Liquidity", "question": "What is the financial impact of major capital projects (cost, funding, expected returns)?",
          "guidance": "Total cost, funding sources, expected returns/benefits."},
-        {"group": "I. Forward-looking & Future Prospects", "question": "Major financial trends and strategic response (next 1-3 years)",
+        {"group": "I. Forward-looking & Future Prospects", "question": "What major financial trends are anticipated in the next 1-3 years, and what is the strategic response?",
          "guidance": "Budget constraints, funding reforms, PPPs, revenue diversification."}
     ],
     "Internal Auditing": [
-        {"group": "H. Corporate Governance", "question": "Annual audit plan and charter",
+        {"group": "H. Corporate Governance", "question": "What is the annual audit plan and charter, and what is the coverage scope?",
          "guidance": "Scope coverage, number of planned audits vs completed."},
-        {"group": "H. Corporate Governance", "question": "Key audit findings, recommendations, and management responses",
+        {"group": "H. Corporate Governance", "question": "What are the key audit findings, recommendations, and management responses?",
          "guidance": "List top 5 high-risk findings and whether management accepted them."},
-        {"group": "H. Corporate Governance", "question": "Implementation status of previous audit recommendations",
+        {"group": "H. Corporate Governance", "question": "What is the implementation status of previous audit recommendations?",
          "guidance": "Number closed, in progress, not implemented. Provide percentages."},
-        {"group": "H. Corporate Governance", "question": "Assessment of internal control environment",
+        {"group": "H. Corporate Governance", "question": "How effective is the internal control environment, and what is the assessment?",
          "guidance": "Qualitative opinion on control design and operation."},
-        {"group": "J. Compliance & Responsibility", "question": "Compliance with financial laws and regulations",
+        {"group": "J. Compliance & Responsibility", "question": "What is the compliance status with financial laws and regulations, and were there any breaches?",
          "guidance": "Breaches detected, penalties, remedial actions."},
-        {"group": "D. Principal Risks & Uncertainties", "question": "Governance, fraud, and operational risks identified",
+        {"group": "D. Principal Risks & Uncertainties", "question": "What governance, fraud, and operational risks have been identified, and what is their status?",
          "guidance": "Risk assessment results, top risks, mitigation status."},
-        {"group": "I. Forward-looking & Future Prospects", "question": "Major audit trends and strategic response (next 1-3 years)",
+        {"group": "I. Forward-looking & Future Prospects", "question": "What major audit trends are anticipated in the next 1-3 years, and what is the strategic response?",
          "guidance": "Data analytics, continuous auditing, forensic services."}
     ]
 }
 
-# ---------- GLOBAL/CORPORATE QUESTIONS (no department, goes into general report) ----------
+# ---------- GLOBAL/CORPORATE QUESTIONS ----------
 GLOBAL_QUESTIONS = [
-    {"group": "J. Compliance & Responsibility", "question": "Statement of Responsibility (TFRS 1, para 47-48)",
-     "guidance": "Draft a formal statement acknowledging responsibility for true and fair financial statements."},
-    {"group": "J. Compliance & Responsibility", "question": "Compliance Statement (TFRS 1, para 55)",
+    {"group": "J. Compliance & Responsibility", "question": "Has the statement of responsibility (TFRS 1, para 47-48) been formally adopted, confirming accountability for true and fair financial statements?",
+     "guidance": "Draft a formal statement acknowledging responsibility."},
+    {"group": "J. Compliance & Responsibility", "question": "Has full compliance with TFRS 1 and all relevant laws been declared in the report?",
      "guidance": "Declare full compliance with TFRS 1 and all relevant laws."},
-    {"group": "H. Corporate Governance", "question": "Auditor Appointment (TFRS 1, para 45)",
-     "guidance": "Provide full name, address, registration, TIN, and PF number of the external auditor."},
-    {"group": "J. Compliance & Responsibility", "question": "Political and Charitable Donations (TFRS 1, para 49)",
-     "guidance": "Disclose total political donations and recipients; charitable donations totals."},
-    {"group": "J. Compliance & Responsibility", "question": "Publication (TFRS 1, para 56)",
+    {"group": "H. Corporate Governance", "question": "Who is the external auditor (name, address, registration, TIN, PF number), and how are they appointed?",
+     "guidance": "Provide full contact details and registration numbers."},
+    {"group": "J. Compliance & Responsibility", "question": "What political and charitable donations were made, and to which political recipients?",
+     "guidance": "Disclose total political donations and recipients; charitable donations totals (names not required)."},
+    {"group": "J. Compliance & Responsibility", "question": "Has the report been published on the Ministry website within 30 days of approval?",
      "guidance": "Confirm if published on the Ministry website within 30 days of approval."},
-    {"group": "J. Compliance & Responsibility", "question": "Approval and Signing (TFRS 1, para 57)",
+    {"group": "J. Compliance & Responsibility", "question": "Who approved the report, and on what date (list signatories and designations)?",
      "guidance": "List signatories (names, designations) and approval date."},
-    {"group": "H. Corporate Governance", "question": "Corporate Governance (TFRS 1, para 41)",
+    {"group": "H. Corporate Governance", "question": "How does the Ministry comply with best practice corporate governance codes?",
      "guidance": "Explain how the Ministry complies with best practice governance codes."},
-    {"group": "H. Corporate Governance", "question": "Membership (TFRS 1, para 42-43)",
-     "guidance": "List governance members (Permanent Secretary, Commissioners, etc.) and meeting attendance."},
-    {"group": "I. Forward-looking & Future Prospects", "question": "Major strategic priorities for the entire Ministry (next 1-3 years)",
+    {"group": "H. Corporate Governance", "question": "Who are the governance members (Permanent Secretary, Commissioners, etc.), and what is their meeting attendance record?",
+     "guidance": "List governance members and meeting attendance."},
+    {"group": "I. Forward-looking & Future Prospects", "question": "What are the major strategic priorities for the entire Ministry in the next 1-3 years, and what is the outlook?",
      "guidance": "Based on national plans, mineral sector strategy, and budget outlook."}
 ]
 
@@ -307,8 +307,8 @@ with st.sidebar.expander("🔧 Admin - Add New Question (Password: admin123)"):
         st.success("Admin access granted.")
         new_dept = st.selectbox("Department", DEPARTMENTS + ["**CORPORATE / GENERAL**"])
         new_group = st.selectbox("TFRS Group", list(TFRS_GROUPS.keys()))
-        new_q = st.text_area("Question")
-        new_guidance = st.text_area("Guidance")
+        new_q = st.text_area("Question", placeholder="e.g., How does your department ensure compliance with the Public Procurement Act?")
+        new_guidance = st.text_area("Guidance", placeholder="e.g., State the compliance percentage, number of audits, and any corrective actions taken.")
         if st.button("➕ Add Question"):
             if new_q and new_guidance:
                 new_row = {
@@ -324,7 +324,7 @@ with st.sidebar.expander("🔧 Admin - Add New Question (Password: admin123)"):
                 }
                 st.session_state.data = pd.concat([st.session_state.data, pd.DataFrame([new_row])], ignore_index=True)
                 save_data(st.session_state.data)
-                st.success(f"Added question to {new_dept}!")
+                st.success(f"✅ Added question to {new_dept}!")
                 st.rerun()
     elif admin_pass:
         st.error("Wrong password.")
@@ -333,8 +333,10 @@ st.sidebar.markdown("---")
 st.sidebar.caption(f"Data file: {DATA_FILE}")
 st.sidebar.caption(f"Last update: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
 
-# ---------- DATA ENTRY ----------
+# ---------- DATA ENTRY (SIMPLIFIED - NO CONFUSING HEADERS) ----------
 st.subheader(f"📋 Checklist: {selected_dept}")
+st.caption("Answer each question below. Expand each item to see guidance and upload files.")
+
 dept_mask = st.session_state.data["Department"] == selected_dept
 dept_data = st.session_state.data[dept_mask].copy()
 
@@ -342,20 +344,15 @@ if dept_data.empty:
     st.warning(f"No questions found for {selected_dept}.")
     st.stop()
 
-# Group questions by TFRS Group for display
-grouped = dept_data.groupby("Group")
-
 with st.form(key="entry_form"):
-    st.caption("Expand each section and provide the required data. Attach files where available.")
-    
     updated_statuses = []
     updated_comments = []
     updated_narratives = []
     updated_attachments = []
     
-    # We need to iterate over the original index to update correctly
+    # Simple counter for questions
+    q_counter = 1
     for idx, row in dept_data.iterrows():
-        group = row["Group"]
         question = row["Question"]
         guidance = row["Guidance"]
         current_status = row["Status"]
@@ -363,16 +360,8 @@ with st.form(key="entry_form"):
         current_narrative = row["Narrative"]
         current_attachments = row["Attachments"]
         
-        # Display group header only once per group
-        if group and group not in st.session_state.get('displayed_groups', []):
-            st.markdown(f"### 📂 {group}")
-            st.caption(TFRS_GROUPS.get(group, ""))
-            st.markdown("---")
-            if 'displayed_groups' not in st.session_state:
-                st.session_state.displayed_groups = []
-            st.session_state.displayed_groups.append(group)
-        
-        with st.expander(f"Q: {question}", expanded=False):
+        # Display as a simple expander with a number
+        with st.expander(f"Q{q_counter}: {question}", expanded=False):
             col1, col2 = st.columns([1, 2])
             with col1:
                 try:
@@ -401,7 +390,6 @@ with st.form(key="entry_form"):
                     key=f"comment_{idx}",
                     placeholder="e.g., See page 5 of policy"
                 )
-                # File uploader
                 uploaded_file = st.file_uploader(
                     "Attach supporting document (PDF, Excel, Image)",
                     type=["pdf", "xlsx", "xls", "docx", "png", "jpg", "jpeg"],
@@ -409,7 +397,6 @@ with st.form(key="entry_form"):
                     label_visibility="collapsed"
                 )
                 if uploaded_file is not None:
-                    # Save file
                     ext = uploaded_file.name.split('.')[-1]
                     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
                     safe_name = f"{selected_dept.replace(' ', '_')}_{ts}.{ext}"
@@ -418,7 +405,6 @@ with st.form(key="entry_form"):
                         f.write(uploaded_file.getbuffer())
                     st.success(f"✅ File saved: {safe_name}")
                     current_attachments = safe_name if not current_attachments else current_attachments + ", " + safe_name
-                # Show existing attachments
                 if current_attachments:
                     st.info(f"📎 Attached: {current_attachments}")
             
@@ -426,10 +412,8 @@ with st.form(key="entry_form"):
             updated_narratives.append(narrative)
             updated_comments.append(comment)
             updated_attachments.append(current_attachments)
-    
-    # Reset displayed groups for next render
-    if 'displayed_groups' in st.session_state:
-        del st.session_state.displayed_groups
+        
+        q_counter += 1
     
     submitted = st.form_submit_button("💾 Save My Data")
     if submitted:
@@ -507,7 +491,6 @@ if st.button("📝 Generate Consolidated Draft Report (Word)"):
         # 3. Grouped by TFRS Sections (across all departments)
         doc.add_heading('3. Operational and Financial Review by TFRS Section', level=2)
         for group in TFRS_GROUPS.keys():
-            # Get all rows from all departments (except corporate) belonging to this group
             group_data = st.session_state.data[
                 (st.session_state.data["Group"] == group) &
                 (st.session_state.data["Department"] != "**CORPORATE / GENERAL**")
@@ -516,7 +499,6 @@ if st.button("📝 Generate Consolidated Draft Report (Word)"):
                 continue
             doc.add_heading(f'3.{list(TFRS_GROUPS.keys()).index(group)+1} {group}', level=3)
             doc.add_paragraph(TFRS_GROUPS[group])
-            # Group by department for readability
             for dept in DEPARTMENTS:
                 dept_group = group_data[group_data["Department"] == dept]
                 if dept_group.empty:
@@ -542,7 +524,6 @@ if st.button("📝 Generate Consolidated Draft Report (Word)"):
         output.write(f"Date: {datetime.now().strftime('%d %B %Y')}\n".encode())
         output.write("="*80 + "\n\n".encode())
         
-        # Corporate
         corp_data = st.session_state.data[st.session_state.data["Department"] == "**CORPORATE / GENERAL**"]
         if not corp_data.empty:
             output.write("CORPORATE GOVERNANCE & GENERAL DISCLOSURES\n".encode())
@@ -554,7 +535,6 @@ if st.button("📝 Generate Consolidated Draft Report (Word)"):
                     output.write(f"Attachments: {row['Attachments']}\n".encode())
                 output.write("\n".encode())
         
-        # TFRS Groups
         for group in TFRS_GROUPS.keys():
             group_data = st.session_state.data[
                 (st.session_state.data["Group"] == group) &
