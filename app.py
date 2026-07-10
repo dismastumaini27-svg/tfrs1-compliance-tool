@@ -5,17 +5,26 @@ import io
 import os
 import re
 
+# Optional: for Word report generation
 try:
     from docx import Document
     DOCX_AVAILABLE = True
 except ImportError:
     DOCX_AVAILABLE = False
 
-# ---------- SIMPLE DATA STRUCTURES (NO RISK OF SYNTAX ERRORS) ----------
+# ------------------------------------------------------------
+# CONFIGURATION
+# ------------------------------------------------------------
 DEPARTMENTS = [
-    "Human Resource", "Monitoring & Evaluation", "Information & Communication Technology",
-    "Government Communication Unit", "Policy & Planning", "Procurement",
-    "Commissioner for Minerals", "Finance & Accounts", "Internal Auditing"
+    "Human Resource",
+    "Monitoring & Evaluation",
+    "Information & Communication Technology",
+    "Government Communication Unit",
+    "Policy & Planning",
+    "Procurement",
+    "Commissioner for Minerals",
+    "Finance & Accounts",
+    "Internal Auditing"
 ]
 
 YEARS = ["2025", "2026", "2027", "2028", "2029", "2030"]
@@ -27,32 +36,56 @@ TFRS_GROUPS = {
     "J. Compliance": "Statement of responsibility and regulatory compliance."
 }
 
-# ---------- QUESTIONS STORED AS SIMPLE LISTS OF TUPLES ----------
-# Each tuple: (department, group, question, guidance)
+# ------------------------------------------------------------
+# QUESTIONS – defined as simple tuples to avoid syntax errors
+# Format: (department, TFRS_group, question_text, guidance_text)
+# ------------------------------------------------------------
 QUESTION_LIST = [
-    ("Human Resource", "A. Nature of Operation", "Describe the role of HR in supporting the Ministry's mandate.", "Outline staffing, recruitment, training."),
-    ("Monitoring & Evaluation", "G. Performance & KPIs", "What are the key performance indicators for M&E?", "List targets and actual achievements."),
-    ("Information & Communication Technology", "A. Nature of Operation", "How is ICT structured and what services does it provide?", "Describe systems, networks, and support."),
-    ("Government Communication Unit", "A. Nature of Operation", "What is the role of the Government Communication Unit?", "Outline public engagement and media relations."),
-    ("Policy & Planning", "I. Forward-looking", "What are the major policy trends affecting the minerals sector?", "Discuss new regulations and strategic responses."),
-    ("Procurement", "J. Compliance", "How does the department ensure compliance with the Public Procurement Act?", "Describe adherence to regulations."),
-    ("Commissioner for Minerals", "G. Performance & KPIs", "What are the mineral production statistics for the year?", "Provide tonnages and royalty collections."),
-    ("Finance & Accounts", "G. Performance & KPIs", "What is the budget absorption rate and major variances?", "Show execution percentage and explain deviations."),
-    ("Internal Auditing", "J. Compliance", "What is the compliance status with financial laws and regulations?", "List any breaches and corrective actions.")
+    ("Human Resource", "A. Nature of Operation",
+     "Describe the role of HR in supporting the Ministry's mandate.",
+     "Outline staffing, recruitment, training."),
+    ("Monitoring & Evaluation", "G. Performance & KPIs",
+     "What are the key performance indicators for M&E?",
+     "List targets and actual achievements."),
+    ("Information & Communication Technology", "A. Nature of Operation",
+     "How is ICT structured and what services does it provide?",
+     "Describe systems, networks, and support."),
+    ("Government Communication Unit", "A. Nature of Operation",
+     "What is the role of the Government Communication Unit?",
+     "Outline public engagement and media relations."),
+    ("Policy & Planning", "I. Forward-looking",
+     "What are the major policy trends affecting the minerals sector?",
+     "Discuss new regulations and strategic responses."),
+    ("Procurement", "J. Compliance",
+     "How does the department ensure compliance with the Public Procurement Act?",
+     "Describe adherence to regulations."),
+    ("Commissioner for Minerals", "G. Performance & KPIs",
+     "What are the mineral production statistics for the year?",
+     "Provide tonnages and royalty collections."),
+    ("Finance & Accounts", "G. Performance & KPIs",
+     "What is the budget absorption rate and major variances?",
+     "Show execution percentage and explain deviations."),
+    ("Internal Auditing", "J. Compliance",
+     "What is the compliance status with financial laws and regulations?",
+     "List any breaches and corrective actions.")
 ]
 
 GLOBAL_QUESTIONS = [
-    ("J. Compliance", "Has the statement of responsibility been adopted?", "Draft a formal statement.")
+    ("J. Compliance",
+     "Has the statement of responsibility been adopted?",
+     "Draft a formal statement.")
 ]
 
-# ---------- BUILD DEPARTMENT_QUESTIONS DICTIONARY FROM THE LIST ----------
+# Build the dictionary used by the app
 DEPARTMENT_QUESTIONS = {}
 for dept, group, q, g in QUESTION_LIST:
-    if dept not in DEPARTMENT_QUESTIONS:
-        DEPARTMENT_QUESTIONS[dept] = []
-    DEPARTMENT_QUESTIONS[dept].append({"group": group, "question": q, "guidance": g})
+    DEPARTMENT_QUESTIONS.setdefault(dept, []).append(
+        {"group": group, "question": q, "guidance": g}
+    )
 
-# ---------- FILE HELPERS ----------
+# ------------------------------------------------------------
+# FILE HELPERS
+# ------------------------------------------------------------
 DATA_FILE = "tfrs_data"
 SYNTHESIS_FILE = "synthesis_data"
 UPLOAD_DIR = "uploads"
@@ -64,12 +97,15 @@ def count_words(text):
     return len(re.findall(r'\b\w+\b', text))
 
 def load_data(year):
+    """Load data for the given year; if file missing or corrupt, recreate it."""
     file_key = f"{DATA_FILE}_{year}.csv"
     try:
         if os.path.exists(file_key):
             df = pd.read_csv(file_key)
-            # Ensure all columns exist
-            for col in ['Department', 'Group', 'Question', 'Guidance', 'Comments', 'Narrative', 'Attachments', 'Year', 'Last_Updated']:
+            # Ensure all required columns exist
+            required = ['Department', 'Group', 'Question', 'Guidance',
+                        'Comments', 'Narrative', 'Attachments', 'Year', 'Last_Updated']
+            for col in required:
                 if col not in df.columns:
                     df[col] = ''
             df['Year'] = df.get('Year', year)
@@ -77,6 +113,7 @@ def load_data(year):
         else:
             return create_new_data(year)
     except Exception:
+        # If reading fails, delete the file and recreate
         if os.path.exists(file_key):
             os.remove(file_key)
         return create_new_data(year)
@@ -86,15 +123,27 @@ def create_new_data(year):
     for dept, questions in DEPARTMENT_QUESTIONS.items():
         for q in questions:
             rows.append({
-                "Department": dept, "Group": q["group"], "Question": q["question"],
-                "Guidance": q["guidance"], "Comments": "", "Narrative": "", "Attachments": "",
-                "Year": year, "Last_Updated": datetime.now().strftime("%Y-%m-%d %H:%M")
+                "Department": dept,
+                "Group": q["group"],
+                "Question": q["question"],
+                "Guidance": q["guidance"],
+                "Comments": "",
+                "Narrative": "",
+                "Attachments": "",
+                "Year": year,
+                "Last_Updated": datetime.now().strftime("%Y-%m-%d %H:%M")
             })
     for group, q, g in GLOBAL_QUESTIONS:
         rows.append({
-            "Department": "**CORPORATE / GENERAL**", "Group": group, "Question": q,
-            "Guidance": g, "Comments": "", "Narrative": "", "Attachments": "",
-            "Year": year, "Last_Updated": datetime.now().strftime("%Y-%m-%d %H:%M")
+            "Department": "**CORPORATE / GENERAL**",
+            "Group": group,
+            "Question": q,
+            "Guidance": g,
+            "Comments": "",
+            "Narrative": "",
+            "Attachments": "",
+            "Year": year,
+            "Last_Updated": datetime.now().strftime("%Y-%m-%d %H:%M")
         })
     df = pd.DataFrame(rows)
     file_key = f"{DATA_FILE}_{year}.csv"
@@ -113,6 +162,7 @@ def load_synthesis(year):
             if 'Group' not in df.columns or 'Synthesis' not in df.columns:
                 os.remove(file_key)
                 raise Exception("Bad format")
+            # Ensure all groups exist
             for group in TFRS_GROUPS.keys():
                 if group not in df['Group'].values:
                     df = pd.concat([df, pd.DataFrame([{'Group': group, 'Synthesis': ''}])], ignore_index=True)
@@ -136,11 +186,12 @@ def save_synthesis(df, year):
     df = df[['Group', 'Synthesis']]
     df.to_csv(file_key, index=False)
 
-# ---------- STREAMLIT APP ----------
+# ------------------------------------------------------------
+# STREAMLIT APP
+# ------------------------------------------------------------
 st.set_page_config(layout="wide")
 st.title("🏛 TFRS 1 Report Builder – Ministry of Minerals")
 
-# Main try block to catch any runtime errors
 try:
     # Sidebar
     st.sidebar.title("📋 Reporting Period")
@@ -148,13 +199,14 @@ try:
 
     st.sidebar.markdown("---")
     st.sidebar.title("📌 Department")
-    selected_dept = st.sidebar.selectbox("Select Your Department", DEPARTMENTS + ["**CORPORATE / GENERAL**"])
+    selected_dept = st.sidebar.selectbox("Select Your Department",
+                                         DEPARTMENTS + ["**CORPORATE / GENERAL**"])
 
     st.sidebar.markdown("---")
     st.sidebar.caption("📌 Write at least **100 words** per narrative.")
     st.sidebar.caption("📌 Attach supporting files.")
 
-    # Load data
+    # Load data for selected year
     if 'data' not in st.session_state or st.session_state.get('current_year') != selected_year:
         st.session_state.data = load_data(selected_year)
         st.session_state.current_year = selected_year
@@ -175,9 +227,15 @@ try:
             if st.button("➕ Add Question"):
                 if new_q and new_guidance:
                     new_row = {
-                        "Department": new_dept, "Group": new_group, "Question": new_q,
-                        "Guidance": new_guidance, "Comments": "", "Narrative": "", "Attachments": "",
-                        "Year": selected_year, "Last_Updated": datetime.now().strftime("%Y-%m-%d %H:%M")
+                        "Department": new_dept,
+                        "Group": new_group,
+                        "Question": new_q,
+                        "Guidance": new_guidance,
+                        "Comments": "",
+                        "Narrative": "",
+                        "Attachments": "",
+                        "Year": selected_year,
+                        "Last_Updated": datetime.now().strftime("%Y-%m-%d %H:%M")
                     }
                     st.session_state.data = pd.concat([st.session_state.data, pd.DataFrame([new_row])], ignore_index=True)
                     save_data(st.session_state.data, selected_year)
