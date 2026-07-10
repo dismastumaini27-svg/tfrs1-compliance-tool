@@ -11,12 +11,13 @@ try:
 except ImportError:
     DOCX_AVAILABLE = False
 
-# ---------- CONFIG ----------
+# ---------- SIMPLE DATA STRUCTURES (NO RISK OF SYNTAX ERRORS) ----------
 DEPARTMENTS = [
     "Human Resource", "Monitoring & Evaluation", "Information & Communication Technology",
     "Government Communication Unit", "Policy & Planning", "Procurement",
     "Commissioner for Minerals", "Finance & Accounts", "Internal Auditing"
 ]
+
 YEARS = ["2025", "2026", "2027", "2028", "2029", "2030"]
 
 TFRS_GROUPS = {
@@ -26,50 +27,30 @@ TFRS_GROUPS = {
     "J. Compliance": "Statement of responsibility and regulatory compliance."
 }
 
-# ---------- ONE QUESTION PER DEPARTMENT (AVOIDS SYNTAX ERRORS) ----------
-DEPARTMENT_QUESTIONS = {
-    "Human Resource": [
-        {"group": "A. Nature of Operation", "question": "Describe the role of HR in supporting the Ministry's mandate.",
-         "guidance": "Outline staffing, recruitment, training."}
-    ],
-    "Monitoring & Evaluation": [
-        {"group": "G. Performance & KPIs", "question": "What are the key performance indicators for M&E?",
-         "guidance": "List targets and actual achievements."}
-    ],
-    "Information & Communication Technology": [
-        {"group": "A. Nature of Operation", "question": "How is ICT structured and what services does it provide?",
-         "guidance": "Describe systems, networks, and support."}
-    ],
-    "Government Communication Unit": [
-        {"group": "A. Nature of Operation", "question": "What is the role of the Government Communication Unit?",
-         "guidance": "Outline public engagement and media relations."}
-    ],
-    "Policy & Planning": [
-        {"group": "I. Forward-looking", "question": "What are the major policy trends affecting the minerals sector?",
-         "guidance": "Discuss new regulations and strategic responses."}
-    ],
-    "Procurement": [
-        {"group": "J. Compliance", "question": "How does the department ensure compliance with the Public Procurement Act?",
-         "guidance": "Describe adherence to regulations."}
-    ],
-    "Commissioner for Minerals": [
-        {"group": "G. Performance & KPIs", "question": "What are the mineral production statistics for the year?",
-         "guidance": "Provide tonnages and royalty collections."}
-    ],
-    "Finance & Accounts": [
-        {"group": "G. Performance & KPIs", "question": "What is the budget absorption rate and major variances?",
-         "guidance": "Show execution percentage and explain deviations."}
-    ],
-    "Internal Auditing": [
-        {"group": "J. Compliance", "question": "What is the compliance status with financial laws and regulations?",
-         "guidance": "List any breaches and corrective actions."}
-    ]
-}
+# ---------- QUESTIONS STORED AS SIMPLE LISTS OF TUPLES ----------
+# Each tuple: (department, group, question, guidance)
+QUESTION_LIST = [
+    ("Human Resource", "A. Nature of Operation", "Describe the role of HR in supporting the Ministry's mandate.", "Outline staffing, recruitment, training."),
+    ("Monitoring & Evaluation", "G. Performance & KPIs", "What are the key performance indicators for M&E?", "List targets and actual achievements."),
+    ("Information & Communication Technology", "A. Nature of Operation", "How is ICT structured and what services does it provide?", "Describe systems, networks, and support."),
+    ("Government Communication Unit", "A. Nature of Operation", "What is the role of the Government Communication Unit?", "Outline public engagement and media relations."),
+    ("Policy & Planning", "I. Forward-looking", "What are the major policy trends affecting the minerals sector?", "Discuss new regulations and strategic responses."),
+    ("Procurement", "J. Compliance", "How does the department ensure compliance with the Public Procurement Act?", "Describe adherence to regulations."),
+    ("Commissioner for Minerals", "G. Performance & KPIs", "What are the mineral production statistics for the year?", "Provide tonnages and royalty collections."),
+    ("Finance & Accounts", "G. Performance & KPIs", "What is the budget absorption rate and major variances?", "Show execution percentage and explain deviations."),
+    ("Internal Auditing", "J. Compliance", "What is the compliance status with financial laws and regulations?", "List any breaches and corrective actions.")
+]
 
 GLOBAL_QUESTIONS = [
-    {"group": "J. Compliance", "question": "Has the statement of responsibility been adopted?",
-     "guidance": "Draft a formal statement."}
+    ("J. Compliance", "Has the statement of responsibility been adopted?", "Draft a formal statement.")
 ]
+
+# ---------- BUILD DEPARTMENT_QUESTIONS DICTIONARY FROM THE LIST ----------
+DEPARTMENT_QUESTIONS = {}
+for dept, group, q, g in QUESTION_LIST:
+    if dept not in DEPARTMENT_QUESTIONS:
+        DEPARTMENT_QUESTIONS[dept] = []
+    DEPARTMENT_QUESTIONS[dept].append({"group": group, "question": q, "guidance": g})
 
 # ---------- FILE HELPERS ----------
 DATA_FILE = "tfrs_data"
@@ -82,32 +63,22 @@ def count_words(text):
         return 0
     return len(re.findall(r'\b\w+\b', text))
 
-def safe_read_csv(file_key, expected_columns=None):
-    if os.path.exists(file_key):
-        try:
-            df = pd.read_csv(file_key)
-            if expected_columns:
-                if all(col in df.columns for col in expected_columns):
-                    return df
-                else:
-                    os.remove(file_key)
-                    return None
-            return df
-        except Exception:
-            os.remove(file_key)
-            return None
-    return None
-
 def load_data(year):
     file_key = f"{DATA_FILE}_{year}.csv"
-    df = safe_read_csv(file_key, ['Department', 'Group', 'Question', 'Guidance', 'Comments', 'Narrative', 'Attachments', 'Year', 'Last_Updated'])
-    if df is not None:
-        for col in ['Comments', 'Narrative', 'Attachments', 'Group']:
-            if col not in df.columns:
-                df[col] = ''
-        df['Year'] = df.get('Year', year)
-        return df
-    else:
+    try:
+        if os.path.exists(file_key):
+            df = pd.read_csv(file_key)
+            # Ensure all columns exist
+            for col in ['Department', 'Group', 'Question', 'Guidance', 'Comments', 'Narrative', 'Attachments', 'Year', 'Last_Updated']:
+                if col not in df.columns:
+                    df[col] = ''
+            df['Year'] = df.get('Year', year)
+            return df
+        else:
+            return create_new_data(year)
+    except Exception:
+        if os.path.exists(file_key):
+            os.remove(file_key)
         return create_new_data(year)
 
 def create_new_data(year):
@@ -119,10 +90,10 @@ def create_new_data(year):
                 "Guidance": q["guidance"], "Comments": "", "Narrative": "", "Attachments": "",
                 "Year": year, "Last_Updated": datetime.now().strftime("%Y-%m-%d %H:%M")
             })
-    for q in GLOBAL_QUESTIONS:
+    for group, q, g in GLOBAL_QUESTIONS:
         rows.append({
-            "Department": "**CORPORATE / GENERAL**", "Group": q["group"], "Question": q["question"],
-            "Guidance": q["guidance"], "Comments": "", "Narrative": "", "Attachments": "",
+            "Department": "**CORPORATE / GENERAL**", "Group": group, "Question": q,
+            "Guidance": g, "Comments": "", "Narrative": "", "Attachments": "",
             "Year": year, "Last_Updated": datetime.now().strftime("%Y-%m-%d %H:%M")
         })
     df = pd.DataFrame(rows)
@@ -136,17 +107,27 @@ def save_data(df, year):
 
 def load_synthesis(year):
     file_key = f"{SYNTHESIS_FILE}_{year}.csv"
-    df = safe_read_csv(file_key, ['Group', 'Synthesis'])
-    if df is not None:
-        for group in TFRS_GROUPS.keys():
-            if group not in df['Group'].values:
-                df = pd.concat([df, pd.DataFrame([{'Group': group, 'Synthesis': ''}])], ignore_index=True)
-        df = df[['Group', 'Synthesis']]
-        return df
-    else:
+    try:
+        if os.path.exists(file_key):
+            df = pd.read_csv(file_key)
+            if 'Group' not in df.columns or 'Synthesis' not in df.columns:
+                os.remove(file_key)
+                raise Exception("Bad format")
+            for group in TFRS_GROUPS.keys():
+                if group not in df['Group'].values:
+                    df = pd.concat([df, pd.DataFrame([{'Group': group, 'Synthesis': ''}])], ignore_index=True)
+            df = df[['Group', 'Synthesis']]
+            return df
+        else:
+            rows = [{'Group': group, 'Synthesis': ''} for group in TFRS_GROUPS.keys()]
+            df = pd.DataFrame(rows)
+            df.to_csv(file_key, index=False)
+            return df
+    except Exception:
+        if os.path.exists(file_key):
+            os.remove(file_key)
         rows = [{'Group': group, 'Synthesis': ''} for group in TFRS_GROUPS.keys()]
         df = pd.DataFrame(rows)
-        file_key = f"{SYNTHESIS_FILE}_{year}.csv"
         df.to_csv(file_key, index=False)
         return df
 
@@ -159,6 +140,7 @@ def save_synthesis(df, year):
 st.set_page_config(layout="wide")
 st.title("🏛 TFRS 1 Report Builder – Ministry of Minerals")
 
+# Main try block to catch any runtime errors
 try:
     # Sidebar
     st.sidebar.title("📋 Reporting Period")
