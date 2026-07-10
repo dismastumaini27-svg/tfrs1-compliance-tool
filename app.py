@@ -13,69 +13,62 @@ except ImportError:
 
 # ---------- CONFIG ----------
 DEPARTMENTS = [
-    "Human Resource",
-    "Monitoring & Evaluation",
-    "Information & Communication Technology",
-    "Government Communication Unit",
-    "Policy & Planning",
-    "Procurement",
-    "Commissioner for Minerals",
-    "Finance & Accounts",
-    "Internal Auditing"
+    "Human Resource", "Monitoring & Evaluation", "Information & Communication Technology",
+    "Government Communication Unit", "Policy & Planning", "Procurement",
+    "Commissioner for Minerals", "Finance & Accounts", "Internal Auditing"
 ]
-
 YEARS = ["2025", "2026", "2027", "2028", "2029", "2030"]
 
 TFRS_GROUPS = {
-    "A. Nature of Operation": "Description of the industry, markets, products, services, and regulatory environment.",
-    "G. Performance & KPIs": "Key performance indicators, service delivery targets, and efficiency.",
-    "I. Forward-looking & Future Prospects": "Anticipated trends, challenges, and strategic responses.",
-    "J. Compliance & Responsibility": "Statement of responsibility, compliance with TFRS 1."
+    "A. Nature of Operation": "Description of the industry, markets, products, services.",
+    "G. Performance & KPIs": "Key performance indicators and service delivery targets.",
+    "I. Forward-looking": "Anticipated trends and strategic responses.",
+    "J. Compliance": "Statement of responsibility and regulatory compliance."
 }
 
-# ---------- SAMPLE QUESTIONS (only 2 per department) ----------
+# ---------- ONE QUESTION PER DEPARTMENT (AVOIDS SYNTAX ERRORS) ----------
 DEPARTMENT_QUESTIONS = {
     "Human Resource": [
-        {"group": "A. Nature of Operation", "question": "What is the role of HR in supporting the Ministry's operational mandate?", "guidance": "Outline staffing levels and key HR functions."},
-        {"group": "G. Performance & KPIs", "question": "What are the key HR performance metrics, and what do the trends show?", "guidance": "Provide turnover rate, cost per hire, etc."}
+        {"group": "A. Nature of Operation", "question": "Describe the role of HR in supporting the Ministry's mandate.",
+         "guidance": "Outline staffing, recruitment, training."}
     ],
     "Monitoring & Evaluation": [
-        {"group": "A. Nature of Operation", "question": "How is the M&E function structured?", "guidance": "Outline the M&E framework and reporting cycles."},
-        {"group": "G. Performance & KPIs", "question": "What are the actual service delivery targets achieved?", "guidance": "Actual outputs vs. targets (e.g., inspections)."}
+        {"group": "G. Performance & KPIs", "question": "What are the key performance indicators for M&E?",
+         "guidance": "List targets and actual achievements."}
     ],
     "Information & Communication Technology": [
-        {"group": "A. Nature of Operation", "question": "How is the ICT function structured?", "guidance": "Outline systems supported and key services."},
-        {"group": "G. Performance & KPIs", "question": "What is the system downtime record?", "guidance": "Number of outages, average resolution time."}
+        {"group": "A. Nature of Operation", "question": "How is ICT structured and what services does it provide?",
+         "guidance": "Describe systems, networks, and support."}
     ],
     "Government Communication Unit": [
-        {"group": "A. Nature of Operation", "question": "What is the role of the Government Communication Unit?", "guidance": "Outline public engagement and media relations."},
-        {"group": "G. Performance & KPIs", "question": "How effectively does the unit disseminate information?", "guidance": "Number of press releases, website traffic."}
+        {"group": "A. Nature of Operation", "question": "What is the role of the Government Communication Unit?",
+         "guidance": "Outline public engagement and media relations."}
     ],
     "Policy & Planning": [
-        {"group": "A. Nature of Operation", "question": "What is the role of the Policy & Planning function?", "guidance": "Outline policy formulation and planning."},
-        {"group": "I. Forward-looking & Future Prospects", "question": "What major policy trends are anticipated?", "guidance": "New mining codes, environmental regulations."}
+        {"group": "I. Forward-looking", "question": "What are the major policy trends affecting the minerals sector?",
+         "guidance": "Discuss new regulations and strategic responses."}
     ],
     "Procurement": [
-        {"group": "A. Nature of Operation", "question": "What is the role of the Procurement function?", "guidance": "Outline procurement of goods and contract management."},
-        {"group": "J. Compliance & Responsibility", "question": "What is the level of adherence to the Public Procurement Act?", "guidance": "Percentage of tenders fully compliant."}
+        {"group": "J. Compliance", "question": "How does the department ensure compliance with the Public Procurement Act?",
+         "guidance": "Describe adherence to regulations."}
     ],
     "Commissioner for Minerals": [
-        {"group": "A. Nature of Operation", "question": "What is the mandate of the Commissioner for Minerals?", "guidance": "Outline licensing, inspection, and revenue collection."},
-        {"group": "G. Performance & KPIs", "question": "What are the mineral production statistics?", "guidance": "Tonnes produced, royalty collections."}
+        {"group": "G. Performance & KPIs", "question": "What are the mineral production statistics for the year?",
+         "guidance": "Provide tonnages and royalty collections."}
     ],
     "Finance & Accounts": [
-        {"group": "A. Nature of Operation", "question": "What is the current cash flow position?", "guidance": "Opening/closing balances, liquidity ratio."},
-        {"group": "G. Performance & KPIs", "question": "What is the budget absorption rate?", "guidance": "Overall budget execution percentage."}
+        {"group": "G. Performance & KPIs", "question": "What is the budget absorption rate and major variances?",
+         "guidance": "Show execution percentage and explain deviations."}
     ],
     "Internal Auditing": [
-        {"group": "A. Nature of Operation", "question": "What is the annual audit plan?", "guidance": "Scope coverage, planned audits."},
-        {"group": "J. Compliance & Responsibility", "question": "What is the compliance status with financial laws?", "guidance": "Breaches detected, remedial actions."}
+        {"group": "J. Compliance", "question": "What is the compliance status with financial laws and regulations?",
+         "guidance": "List any breaches and corrective actions."}
     ]
 }
 
 GLOBAL_QUESTIONS = [
-    {"group": "J. Compliance & Responsibility", "question": "Has the statement of responsibility been formally adopted?", "guidance": "Draft a formal statement."},
-    {"group": "J. Compliance & Responsibility", "question": "Who is the external auditor?", "guidance": "Provide full contact details."}
+    {"group": "J. Compliance", "question": "Has the statement of responsibility been adopted?",
+     "guidance": "Draft a formal statement."}
 ]
 
 # ---------- FILE HELPERS ----------
@@ -122,27 +115,15 @@ def create_new_data(year):
     for dept, questions in DEPARTMENT_QUESTIONS.items():
         for q in questions:
             rows.append({
-                "Department": dept,
-                "Group": q["group"],
-                "Question": q["question"],
-                "Guidance": q["guidance"],
-                "Comments": "",
-                "Narrative": "",
-                "Attachments": "",
-                "Year": year,
-                "Last_Updated": datetime.now().strftime("%Y-%m-%d %H:%M")
+                "Department": dept, "Group": q["group"], "Question": q["question"],
+                "Guidance": q["guidance"], "Comments": "", "Narrative": "", "Attachments": "",
+                "Year": year, "Last_Updated": datetime.now().strftime("%Y-%m-%d %H:%M")
             })
     for q in GLOBAL_QUESTIONS:
         rows.append({
-            "Department": "**CORPORATE / GENERAL**",
-            "Group": q["group"],
-            "Question": q["question"],
-            "Guidance": q["guidance"],
-            "Comments": "",
-            "Narrative": "",
-            "Attachments": "",
-            "Year": year,
-            "Last_Updated": datetime.now().strftime("%Y-%m-%d %H:%M")
+            "Department": "**CORPORATE / GENERAL**", "Group": q["group"], "Question": q["question"],
+            "Guidance": q["guidance"], "Comments": "", "Narrative": "", "Attachments": "",
+            "Year": year, "Last_Updated": datetime.now().strftime("%Y-%m-%d %H:%M")
         })
     df = pd.DataFrame(rows)
     file_key = f"{DATA_FILE}_{year}.csv"
@@ -191,7 +172,7 @@ try:
     st.sidebar.caption("📌 Write at least **100 words** per narrative.")
     st.sidebar.caption("📌 Attach supporting files.")
 
-    # Load data for selected year
+    # Load data
     if 'data' not in st.session_state or st.session_state.get('current_year') != selected_year:
         st.session_state.data = load_data(selected_year)
         st.session_state.current_year = selected_year
@@ -207,24 +188,18 @@ try:
             st.success("Admin access granted.")
             new_dept = st.selectbox("Department", DEPARTMENTS + ["**CORPORATE / GENERAL**"])
             new_group = st.selectbox("TFRS Group", list(TFRS_GROUPS.keys()))
-            new_q = st.text_area("Question", placeholder="e.g., How does your department ensure compliance?")
-            new_guidance = st.text_area("Guidance", placeholder="e.g., Provide compliance percentage.")
+            new_q = st.text_area("Question")
+            new_guidance = st.text_area("Guidance")
             if st.button("➕ Add Question"):
                 if new_q and new_guidance:
                     new_row = {
-                        "Department": new_dept,
-                        "Group": new_group,
-                        "Question": new_q,
-                        "Guidance": new_guidance,
-                        "Comments": "",
-                        "Narrative": "",
-                        "Attachments": "",
-                        "Year": selected_year,
-                        "Last_Updated": datetime.now().strftime("%Y-%m-%d %H:%M")
+                        "Department": new_dept, "Group": new_group, "Question": new_q,
+                        "Guidance": new_guidance, "Comments": "", "Narrative": "", "Attachments": "",
+                        "Year": selected_year, "Last_Updated": datetime.now().strftime("%Y-%m-%d %H:%M")
                     }
                     st.session_state.data = pd.concat([st.session_state.data, pd.DataFrame([new_row])], ignore_index=True)
                     save_data(st.session_state.data, selected_year)
-                    st.success(f"✅ Added question to {new_dept}!")
+                    st.success("✅ Added!")
                     st.rerun()
         elif admin_pass:
             st.error("Wrong password.")
@@ -262,28 +237,28 @@ try:
                 with col1:
                     st.caption(f"💡 {guidance}")
                     narrative = st.text_area(
-                        "Narrative / Detailed Explanation",
+                        "Narrative",
                         value=current_narrative,
                         key=f"narrative_{idx}",
                         height=150,
-                        placeholder="Write a detailed explanation (minimum 100 words)..."
+                        placeholder="Write at least 100 words..."
                     )
                     comment = st.text_input(
-                        "Additional Comments / References",
+                        "Comments / References",
                         value=current_comment,
                         key=f"comment_{idx}",
-                        placeholder="e.g., See page 5"
+                        placeholder="e.g., see policy page 5"
                     )
                 with col2:
-                    new_word_count = count_words(narrative)
-                    if new_word_count >= 100:
-                        st.success(f"✅ {new_word_count} words - Compliant!")
+                    wc = count_words(narrative)
+                    if wc >= 100:
+                        st.success(f"✅ {wc} words - Compliant!")
                     else:
-                        st.warning(f"⚠️ {new_word_count} / 100 words")
-                        st.progress(new_word_count / 100)
+                        st.warning(f"⚠️ {wc} / 100 words")
+                        st.progress(wc / 100)
 
                     uploaded_file = st.file_uploader(
-                        "Attach supporting document",
+                        "Attach document",
                         type=["pdf", "xlsx", "xls", "docx", "png", "jpg", "jpeg"],
                         key=f"upload_{idx}",
                         label_visibility="collapsed"
@@ -335,7 +310,7 @@ try:
         summary.append({
             "Department": dept,
             "Total Questions": total,
-            "✅ Compliant (≥100 words)": compliant,
+            "✅ Compliant": compliant,
             "❌ Incomplete": total - compliant,
             "Compliance %": round(compliance, 1)
         })
@@ -417,7 +392,7 @@ try:
 
             doc.add_heading('1. Executive Summary', level=2)
             for _, row in df_summary.iterrows():
-                doc.add_paragraph(f'• {row["Department"]}: {row["Compliance %"]}% compliance ({row["✅ Compliant (≥100 words)"]} out of {row["Total Questions"]})')
+                doc.add_paragraph(f'• {row["Department"]}: {row["Compliance %"]}% compliance ({row["✅ Compliant"]} out of {row["Total Questions"]})')
             doc.add_paragraph('')
 
             corp_data = st.session_state.data[st.session_state.data["Department"] == "**CORPORATE / GENERAL**"]
