@@ -27,7 +27,8 @@ DEPARTMENTS = [
     "Internal Auditing"
 ]
 
-QUARTERS = ["Q1 (Jan - Mar)", "Q2 (Apr - Jun)", "Q3 (Jul - Sep)", "Q4 (Oct - Dec)"]
+# ✅ UPDATED: Tanzanian Government Financial Year (July - June)
+QUARTERS = ["Q1 (Jul - Sep)", "Q2 (Oct - Dec)", "Q3 (Jan - Mar)", "Q4 (Apr - Jun)"]
 YEARS = ["2025", "2026", "2027", "2028", "2029", "2030"]
 
 TFRS_GROUPS = {
@@ -236,20 +237,15 @@ def load_synthesis(quarter, year):
     if os.path.exists(file_key):
         try:
             df = pd.read_csv(file_key)
-            # Ensure required columns exist
             if 'Group' not in df.columns or 'Synthesis' not in df.columns:
-                # If missing, recreate
                 os.remove(file_key)
                 return load_synthesis(quarter, year)
-            # Keep only needed columns
             df = df[['Group', 'Synthesis']]
-            # Ensure all groups exist
             for group in TFRS_GROUPS.keys():
                 if group not in df['Group'].values:
                     df = pd.concat([df, pd.DataFrame([{'Group': group, 'Synthesis': ''}])], ignore_index=True)
             return df
         except Exception:
-            # If any read error, delete and recreate
             if os.path.exists(file_key):
                 os.remove(file_key)
             return load_synthesis(quarter, year)
@@ -261,7 +257,6 @@ def load_synthesis(quarter, year):
 
 def save_synthesis(df, quarter, year):
     file_key = f"{SYNTHESIS_FILE}_{quarter}_{year}"
-    # Keep only Group and Synthesis columns
     df = df[['Group', 'Synthesis']]
     df.to_csv(file_key, index=False)
 
@@ -271,7 +266,6 @@ def load_data(quarter, year):
     if os.path.exists(file_key):
         try:
             df = pd.read_csv(file_key)
-            # Add missing columns if upgrading
             for col in ['Group', 'Attachments', 'Narrative', 'Quarter', 'Year']:
                 if col not in df.columns:
                     df[col] = ''
@@ -283,7 +277,6 @@ def load_data(quarter, year):
             df['Year'] = df['Year'].fillna(year)
             return df
         except Exception:
-            # If error, delete and recreate
             if os.path.exists(file_key):
                 os.remove(file_key)
             return create_new_data(quarter, year)
@@ -342,7 +335,7 @@ st.title("🏛 TFRS 1 Report Builder – Ministry of Minerals")
 # ---------- SIDEBAR ----------
 st.sidebar.title("📋 Reporting Period")
 selected_quarter = st.sidebar.selectbox("Select Quarter", QUARTERS)
-selected_year = st.sidebar.selectbox("Select Year", YEARS)
+selected_year = st.sidebar.selectbox("Select Financial Year", YEARS)
 
 st.sidebar.markdown("---")
 st.sidebar.title("📌 Department")
@@ -419,8 +412,6 @@ with st.form(key="entry_form"):
         current_narrative = row["Narrative"]
         current_comment = row["Comments"]
         current_attachments = row["Attachments"]
-        
-        word_count = count_words(current_narrative)
         
         with st.expander(f"Q{q_counter}: {question}", expanded=False):
             col1, col2 = st.columns([2, 1])
