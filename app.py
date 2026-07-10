@@ -26,7 +26,7 @@ DEPARTMENTS = [
 ]
 
 # Tanzania Government Financial Year: July - June
-QUARTERS = ["Q1 (Jul - Sep)", "Q2 (Oct - Dec)", "Q3 (Jan - Mar)", "Q4 (Apr - Jun)"]
+# We only select the Year now (e.g., 2025 means FY 2025/2026)
 YEARS = ["2025", "2026", "2027", "2028", "2029", "2030"]
 
 TFRS_GROUPS = {
@@ -146,8 +146,8 @@ GLOBAL_QUESTIONS = [
 ]
 
 # ---------- FILE PATHS ----------
-DATA_FILE = "tfrs_data.csv"
-SYNTHESIS_FILE = "synthesis_data.csv"
+DATA_FILE = "tfrs_data"
+SYNTHESIS_FILE = "synthesis_data"
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
@@ -173,22 +173,20 @@ def safe_read_csv(file_key, expected_columns=None):
             return None
     return None
 
-# ---------- DATA LOAD/SAVE ----------
-def load_data(quarter, year):
-    file_key = f"{DATA_FILE}_{quarter}_{year}"
-    df = safe_read_csv(file_key, ['Department', 'Group', 'Question', 'Guidance', 'Comments', 'Narrative', 'Attachments', 'Quarter', 'Year', 'Last_Updated'])
+# ---------- DATA LOAD/SAVE (ANNUAL ONLY) ----------
+def load_data(year):
+    file_key = f"{DATA_FILE}_{year}.csv"
+    df = safe_read_csv(file_key, ['Department', 'Group', 'Question', 'Guidance', 'Comments', 'Narrative', 'Attachments', 'Year', 'Last_Updated'])
     if df is not None:
-        # fill missing
         for col in ['Comments', 'Narrative', 'Attachments', 'Group']:
             if col not in df.columns:
                 df[col] = ''
-        df['Quarter'] = df.get('Quarter', quarter)
         df['Year'] = df.get('Year', year)
         return df
     else:
-        return create_new_data(quarter, year)
+        return create_new_data(year)
 
-def create_new_data(quarter, year):
+def create_new_data(year):
     rows = []
     for dept, questions in DEPARTMENT_QUESTIONS.items():
         for q in questions:
@@ -200,7 +198,6 @@ def create_new_data(quarter, year):
                 "Comments": "",
                 "Narrative": "",
                 "Attachments": "",
-                "Quarter": quarter,
                 "Year": year,
                 "Last_Updated": datetime.now().strftime("%Y-%m-%d %H:%M")
             })
@@ -213,24 +210,22 @@ def create_new_data(quarter, year):
             "Comments": "",
             "Narrative": "",
             "Attachments": "",
-            "Quarter": quarter,
             "Year": year,
             "Last_Updated": datetime.now().strftime("%Y-%m-%d %H:%M")
         })
     df = pd.DataFrame(rows)
-    file_key = f"{DATA_FILE}_{quarter}_{year}"
+    file_key = f"{DATA_FILE}_{year}.csv"
     df.to_csv(file_key, index=False)
     return df
 
-def save_data(df, quarter, year):
-    file_key = f"{DATA_FILE}_{quarter}_{year}"
+def save_data(df, year):
+    file_key = f"{DATA_FILE}_{year}.csv"
     df.to_csv(file_key, index=False)
 
-def load_synthesis(quarter, year):
-    file_key = f"{SYNTHESIS_FILE}_{quarter}_{year}"
+def load_synthesis(year):
+    file_key = f"{SYNTHESIS_FILE}_{year}.csv"
     df = safe_read_csv(file_key, ['Group', 'Synthesis'])
     if df is not None:
-        # Ensure all groups exist
         for group in TFRS_GROUPS.keys():
             if group not in df['Group'].values:
                 df = pd.concat([df, pd.DataFrame([{'Group': group, 'Synthesis': ''}])], ignore_index=True)
@@ -239,12 +234,12 @@ def load_synthesis(quarter, year):
     else:
         rows = [{'Group': group, 'Synthesis': ''} for group in TFRS_GROUPS.keys()]
         df = pd.DataFrame(rows)
-        file_key = f"{SYNTHESIS_FILE}_{quarter}_{year}"
+        file_key = f"{SYNTHESIS_FILE}_{year}.csv"
         df.to_csv(file_key, index=False)
         return df
 
-def save_synthesis(df, quarter, year):
-    file_key = f"{SYNTHESIS_FILE}_{quarter}_{year}"
+def save_synthesis(df, year):
+    file_key = f"{SYNTHESIS_FILE}_{year}.csv"
     df = df[['Group', 'Synthesis']]
     df.to_csv(file_key, index=False)
 
@@ -254,7 +249,6 @@ st.title("🏛 TFRS 1 Report Builder – Ministry of Minerals")
 
 # Sidebar
 st.sidebar.title("📋 Reporting Period")
-selected_quarter = st.sidebar.selectbox("Select Quarter", QUARTERS)
 selected_year = st.sidebar.selectbox("Select Financial Year", YEARS)
 
 st.sidebar.markdown("---")
@@ -265,12 +259,11 @@ st.sidebar.markdown("---")
 st.sidebar.caption("📌 **Compliance Requirement:** Write at least **100 words** per narrative.")
 st.sidebar.caption("📌 Attach supporting files (PDF, Excel, Images) under each question.")
 
-# Load data for selected period
-if 'data' not in st.session_state or st.session_state.get('current_quarter') != selected_quarter or st.session_state.get('current_year') != selected_year:
-    st.session_state.data = load_data(selected_quarter, selected_year)
-    st.session_state.current_quarter = selected_quarter
+# Load data for selected year
+if 'data' not in st.session_state or st.session_state.get('current_year') != selected_year:
+    st.session_state.data = load_data(selected_year)
     st.session_state.current_year = selected_year
-    st.session_state.synthesis = load_synthesis(selected_quarter, selected_year)
+    st.session_state.synthesis = load_synthesis(selected_year)
 
 if 'uploaded_files' not in st.session_state:
     st.session_state.uploaded_files = {}
@@ -294,23 +287,22 @@ with st.sidebar.expander("🔧 Admin - Add New Question (Password: admin123)"):
                     "Comments": "",
                     "Narrative": "",
                     "Attachments": "",
-                    "Quarter": selected_quarter,
                     "Year": selected_year,
                     "Last_Updated": datetime.now().strftime("%Y-%m-%d %H:%M")
                 }
                 st.session_state.data = pd.concat([st.session_state.data, pd.DataFrame([new_row])], ignore_index=True)
-                save_data(st.session_state.data, selected_quarter, selected_year)
+                save_data(st.session_state.data, selected_year)
                 st.success(f"✅ Added question to {new_dept}!")
                 st.rerun()
     elif admin_pass:
         st.error("Wrong password.")
 
 st.sidebar.markdown("---")
-st.sidebar.caption(f"Reporting Period: {selected_quarter} {selected_year}")
+st.sidebar.caption(f"Reporting Period: Financial Year {selected_year}")
 
 # ---------- DATA ENTRY ----------
 st.subheader(f"📋 Checklist: {selected_dept}")
-st.caption(f"**Reporting Period:** {selected_quarter} {selected_year}")
+st.caption(f"**Reporting Period:** Financial Year {selected_year}")
 st.caption("Answer each question below. **Minimum 100 words** per narrative is required for compliance.")
 
 dept_mask = st.session_state.data["Department"] == selected_dept
@@ -389,15 +381,14 @@ with st.form(key="entry_form"):
             st.session_state.data.at[idx, "Comments"] = updated_comments[i]
             st.session_state.data.at[idx, "Attachments"] = updated_attachments[i]
             st.session_state.data.at[idx, "Last_Updated"] = datetime.now().strftime("%Y-%m-%d %H:%M")
-            st.session_state.data.at[idx, "Quarter"] = selected_quarter
             st.session_state.data.at[idx, "Year"] = selected_year
-        save_data(st.session_state.data, selected_quarter, selected_year)
+        save_data(st.session_state.data, selected_year)
         st.success("✅ Data saved successfully!")
 
 # ---------- DASHBOARD ----------
 st.markdown("---")
 st.header("📊 Live Compliance Dashboard")
-st.caption(f"**Reporting Period:** {selected_quarter} {selected_year}")
+st.caption(f"**Reporting Period:** Financial Year {selected_year}")
 st.info("💡 **Compliance %** = (Number of questions with ≥100 words) / (Total questions).")
 
 all_depts = st.session_state.data["Department"].unique()
@@ -417,7 +408,7 @@ for dept in all_depts:
         "Compliance %": round(compliance, 1)
     })
 df_summary = pd.DataFrame(summary)
-st.dataframe(df_summary, use_container_width=True, hide_index=True)   # FIXED
+st.dataframe(df_summary, use_container_width=True, hide_index=True)
 st.subheader("Overall Compliance by Department (%)")
 st.bar_chart(df_summary.set_index("Department")["Compliance %"])
 
@@ -431,7 +422,6 @@ with st.expander("📝 Admin: Synthesize Departmental Inputs (Password: admin123
         st.success("✅ Admin access granted.")
         st.info("📌 Rewrite the raw departmental inputs into one cohesive paragraph per TFRS group.")
 
-        # Show raw data for reference
         st.subheader("📄 Raw Departmental Inputs")
         for group in TFRS_GROUPS.keys():
             group_data = st.session_state.data[
@@ -450,7 +440,6 @@ with st.expander("📝 Admin: Synthesize Departmental Inputs (Password: admin123
                                 st.caption(f"Word count: {count_words(row['Narrative'])}")
                             st.divider()
 
-        # Synthesis editor
         st.subheader("✍️ Write Your Polished Synthesis Paragraphs")
         synth_df = st.session_state.synthesis.copy()
         updated = {}
@@ -472,8 +461,8 @@ with st.expander("📝 Admin: Synthesize Departmental Inputs (Password: admin123
                     st.session_state.synthesis.at[idx[0], 'Synthesis'] = text
                 else:
                     st.session_state.synthesis = pd.concat([st.session_state.synthesis, pd.DataFrame([{'Group': group, 'Synthesis': text}])], ignore_index=True)
-            save_synthesis(st.session_state.synthesis, selected_quarter, selected_year)
-            st.success(f"✅ Synthesis saved for {selected_quarter} {selected_year}!")
+            save_synthesis(st.session_state.synthesis, selected_year)
+            st.success(f"✅ Synthesis saved for Financial Year {selected_year}!")
             st.rerun()
     elif synth_pass:
         st.error("Wrong password.")
@@ -481,7 +470,7 @@ with st.expander("📝 Admin: Synthesize Departmental Inputs (Password: admin123
 # ---------- REPORT GENERATOR ----------
 st.markdown("---")
 st.header("📄 Generate Draft TFRS 1 Report")
-st.warning(f"Report will be generated for **{selected_quarter} {selected_year}**. Uses synthesis if available.")
+st.warning(f"Report will be generated for **Financial Year {selected_year}**. Uses synthesis if available.")
 
 if st.button("📝 Generate Consolidated Draft Report (Word)"):
     output = io.BytesIO()
@@ -489,18 +478,16 @@ if st.button("📝 Generate Consolidated Draft Report (Word)"):
         doc = Document()
         doc.add_heading('REPORT BY THOSE CHARGED WITH GOVERNANCE', 0)
         doc.add_heading('Ministry of Minerals', level=1)
-        doc.add_paragraph(f'Reporting Period: {selected_quarter} {selected_year}')
+        doc.add_paragraph(f'Reporting Period: Financial Year {selected_year}')
         doc.add_paragraph(f'Date Generated: {datetime.now().strftime("%d %B %Y")}')
         doc.add_paragraph('Prepared in accordance with TFRS 1 (Effective 1st January 2021)')
         doc.add_paragraph('')
 
-        # Executive Summary
         doc.add_heading('1. Executive Summary', level=2)
         for _, row in df_summary.iterrows():
             doc.add_paragraph(f'• {row["Department"]}: {row["Compliance %"]}% compliance ({row["✅ Compliant (≥100 words)"]} out of {row["Total Questions"]} questions)')
         doc.add_paragraph('')
 
-        # Corporate / General
         corp_data = st.session_state.data[st.session_state.data["Department"] == "**CORPORATE / GENERAL**"]
         if not corp_data.empty:
             doc.add_heading('2. Corporate Governance and General Disclosures', level=2)
@@ -511,7 +498,6 @@ if st.button("📝 Generate Consolidated Draft Report (Word)"):
                     doc.add_paragraph(f'Attachments: {row["Attachments"]}')
             doc.add_paragraph('')
 
-        # TFRS Sections
         doc.add_heading('3. Operational and Financial Review by TFRS Section', level=2)
         synth_df = st.session_state.synthesis
         for group in TFRS_GROUPS.keys():
@@ -550,7 +536,7 @@ if st.button("📝 Generate Consolidated Draft Report (Word)"):
     else:
         output.write("="*80 + "\n".encode())
         output.write("REPORT BY THOSE CHARGED WITH GOVERNANCE - MINISTRY OF MINERALS\n".encode())
-        output.write(f"Reporting Period: {selected_quarter} {selected_year}\n".encode())
+        output.write(f"Reporting Period: Financial Year {selected_year}\n".encode())
         output.write("="*80 + "\n\n".encode())
         output.write("(Install python-docx to generate a proper Word document.)\n".encode())
         mime_type = "text/plain"
@@ -559,7 +545,7 @@ if st.button("📝 Generate Consolidated Draft Report (Word)"):
     st.download_button(
         label=f"⬇ Download Draft Report (.{file_ext})",
         data=output.getvalue(),
-        file_name=f"TFRS1_Draft_{selected_quarter}_{selected_year}_{datetime.now().strftime('%Y%m%d')}.{file_ext}",
+        file_name=f"TFRS1_Report_FY{selected_year}_{datetime.now().strftime('%Y%m%d')}.{file_ext}",
         mime=mime_type
     )
-    st.success(f"Draft report generated for {selected_quarter} {selected_year}!")
+    st.success(f"Draft report generated for Financial Year {selected_year}!")
