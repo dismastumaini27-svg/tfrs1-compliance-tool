@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import datetime
 import io
 import os
-import base64
+import re
 
 # Try to import docx for Word report generation
 try:
@@ -27,7 +27,9 @@ DEPARTMENTS = [
     "Internal Auditing"
 ]
 
-# Define TFRS Groups for consistent grouping (USED ONLY FOR THE FINAL REPORT)
+QUARTERS = ["Q1 (Jan - Mar)", "Q2 (Apr - Jun)", "Q3 (Jul - Sep)", "Q4 (Oct - Dec)"]
+YEARS = ["2025", "2026", "2027", "2028", "2029", "2030"]
+
 TFRS_GROUPS = {
     "A. Nature of Operation": "Description of the industry, markets, products, services, and regulatory environment.",
     "B. Objectives, Strategies & Operating Model": "Entity's strategic objectives, resource allocation plans, and operating model (inputs/outputs/outcomes).",
@@ -41,7 +43,7 @@ TFRS_GROUPS = {
     "J. Compliance & Responsibility": "Statement of responsibility, compliance with TFRS 1, publication, and approvals."
 }
 
-# ---------- DEPARTMENT-SPECIFIC QUESTIONS (Properly phrased as QUESTIONS) ----------
+# ---------- DEPARTMENT-SPECIFIC QUESTIONS ----------
 DEPARTMENT_QUESTIONS = {
     "Human Resource": [
         {"group": "A. Nature of Operation", "question": "What is the role of HR in supporting the Ministry's operational mandate, and how is it structured?",
@@ -201,7 +203,6 @@ DEPARTMENT_QUESTIONS = {
     ]
 }
 
-# ---------- GLOBAL/CORPORATE QUESTIONS ----------
 GLOBAL_QUESTIONS = [
     {"group": "J. Compliance & Responsibility", "question": "Has the statement of responsibility (TFRS 1, para 47-48) been formally adopted, confirming accountability for true and fair financial statements?",
      "guidance": "Draft a formal statement acknowledging responsibility."},
@@ -223,63 +224,74 @@ GLOBAL_QUESTIONS = [
      "guidance": "Based on national plans, mineral sector strategy, and budget outlook."}
 ]
 
-# ---------- FILE & SESSION MANAGEMENT ----------
+# ---------- FILE PATHS ----------
 DATA_FILE = "tfrs_data.csv"
 SYNTHESIS_FILE = "synthesis_data.csv"
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# ---------- SYNTHESIS DATA FUNCTIONS ----------
-def load_synthesis():
-    if os.path.exists(SYNTHESIS_FILE):
-        df = pd.read_csv(SYNTHESIS_FILE)
-        # Ensure all groups exist
-        for group in TFRS_GROUPS.keys():
-            if group not in df['Group'].values:
-                df = pd.concat([df, pd.DataFrame([{'Group': group, 'Synthesis': ''}])], ignore_index=True)
-        return df
+# ---------- RESILIENT load_synthesis ----------
+def load_synthesis(quarter, year):
+    file_key = f"{SYNTHESIS_FILE}_{quarter}_{year}"
+    if os.path.exists(file_key):
+        try:
+            df = pd.read_csv(file_key)
+            # Ensure required columns exist
+            if 'Group' not in df.columns or 'Synthesis' not in df.columns:
+                # If missing, recreate
+                os.remove(file_key)
+                return load_synthesis(quarter, year)
+            # Keep only needed columns
+            df = df[['Group', 'Synthesis']]
+            # Ensure all groups exist
+            for group in TFRS_GROUPS.keys():
+                if group not in df['Group'].values:
+                    df = pd.concat([df, pd.DataFrame([{'Group': group, 'Synthesis': ''}])], ignore_index=True)
+            return df
+        except Exception:
+            # If any read error, delete and recreate
+            if os.path.exists(file_key):
+                os.remove(file_key)
+            return load_synthesis(quarter, year)
     else:
-        # Create default empty synthesis for all groups
         rows = [{'Group': group, 'Synthesis': ''} for group in TFRS_GROUPS.keys()]
         df = pd.DataFrame(rows)
-        df.to_csv(SYNTHESIS_FILE, index=False)
+        df.to_csv(file_key, index=False)
         return df
 
-def save_synthesis(df):
-    df.to_csv(SYNTHESIS_FILE, index=False)
+def save_synthesis(df, quarter, year):
+    file_key = f"{SYNTHESIS_FILE}_{quarter}_{year}"
+    # Keep only Group and Synthesis columns
+    df = df[['Group', 'Synthesis']]
+    df.to_csv(file_key, index=False)
 
-# ---------- UPDATED load_data() WITH SMART UPGRADE ----------
-def load_data():
-    if os.path.exists(DATA_FILE):
-        df = pd.read_csv(DATA_FILE)
-        
-        # ----- SMART UPGRADE: Detect old statement format and rebuild -----
-        # If the file contains the OLD statement "Service delivery targets", delete it and rebuild.
-        if len(df) > 0 and "Service delivery targets (outputs) and performance indicators" in df["Question"].values:
-            os.remove(DATA_FILE)
-            return create_new_data()
-        # -----------------------------------------------------------------
-
-        # Add missing columns if upgrading from an older version
-        if 'Group' not in df.columns:
-            df['Group'] = ''
-        if 'Attachments' not in df.columns:
-            df['Attachments'] = ''
-        if 'Narrative' not in df.columns:
-            df['Narrative'] = ''
-        
-        df['Status'] = df['Status'].fillna('NA')
-        df['Comments'] = df['Comments'].fillna('')
-        df['Narrative'] = df['Narrative'].fillna('')
-        df['Attachments'] = df['Attachments'].fillna('')
-        df['Group'] = df['Group'].fillna('')
-        return df
+# ---------- RESILIENT load_data ----------
+def load_data(quarter, year):
+    file_key = f"{DATA_FILE}_{quarter}_{year}"
+    if os.path.exists(file_key):
+        try:
+            df = pd.read_csv(file_key)
+            # Add missing columns if upgrading
+            for col in ['Group', 'Attachments', 'Narrative', 'Quarter', 'Year']:
+                if col not in df.columns:
+                    df[col] = ''
+            df['Comments'] = df.get('Comments', '').fillna('')
+            df['Narrative'] = df['Narrative'].fillna('')
+            df['Attachments'] = df['Attachments'].fillna('')
+            df['Group'] = df['Group'].fillna('')
+            df['Quarter'] = df['Quarter'].fillna(quarter)
+            df['Year'] = df['Year'].fillna(year)
+            return df
+        except Exception:
+            # If error, delete and recreate
+            if os.path.exists(file_key):
+                os.remove(file_key)
+            return create_new_data(quarter, year)
     else:
-        return create_new_data()
+        return create_new_data(quarter, year)
 
-def create_new_data():
+def create_new_data(quarter, year):
     rows = []
-    # Department-specific questions
     for dept, questions in DEPARTMENT_QUESTIONS.items():
         for q in questions:
             rows.append({
@@ -287,52 +299,70 @@ def create_new_data():
                 "Group": q["group"],
                 "Question": q["question"],
                 "Guidance": q["guidance"],
-                "Status": "NA",
                 "Comments": "",
                 "Narrative": "",
                 "Attachments": "",
+                "Quarter": quarter,
+                "Year": year,
                 "Last_Updated": datetime.now().strftime("%Y-%m-%d %H:%M")
             })
-    # Global questions
     for q in GLOBAL_QUESTIONS:
         rows.append({
             "Department": "**CORPORATE / GENERAL**",
             "Group": q["group"],
             "Question": q["question"],
             "Guidance": q["guidance"],
-            "Status": "NA",
             "Comments": "",
             "Narrative": "",
             "Attachments": "",
+            "Quarter": quarter,
+            "Year": year,
             "Last_Updated": datetime.now().strftime("%Y-%m-%d %H:%M")
         })
     df = pd.DataFrame(rows)
-    df.to_csv(DATA_FILE, index=False)
+    file_key = f"{DATA_FILE}_{quarter}_{year}"
+    df.to_csv(file_key, index=False)
     return df
 
-def save_data(df):
-    df.to_csv(DATA_FILE, index=False)
+def save_data(df, quarter, year):
+    file_key = f"{DATA_FILE}_{quarter}_{year}"
+    df.to_csv(file_key, index=False)
+
+# ---------- WORD COUNT HELPER ----------
+def count_words(text):
+    if not text or not isinstance(text, str):
+        return 0
+    words = re.findall(r'\b\w+\b', text)
+    return len(words)
 
 # ---------- STREAMLIT APP ----------
 st.set_page_config(layout="wide")
 st.title("🏛 TFRS 1 Report Builder – Ministry of Minerals")
 
-if 'data' not in st.session_state:
-    st.session_state.data = load_data()
-if 'synthesis' not in st.session_state:
-    st.session_state.synthesis = load_synthesis()
+# ---------- SIDEBAR ----------
+st.sidebar.title("📋 Reporting Period")
+selected_quarter = st.sidebar.selectbox("Select Quarter", QUARTERS)
+selected_year = st.sidebar.selectbox("Select Year", YEARS)
+
+st.sidebar.markdown("---")
+st.sidebar.title("📌 Department")
+selected_dept = st.sidebar.selectbox("Select Your Department", DEPARTMENTS + ["**CORPORATE / GENERAL**"])
+
+st.sidebar.markdown("---")
+st.sidebar.caption("📌 **Compliance Requirement:** Write at least **100 words** per narrative to be fully compliant.")
+st.sidebar.caption("📌 Attach supporting files (PDF, Excel, Images) under each question.")
+
+# ---------- LOAD DATA ----------
+if 'data' not in st.session_state or st.session_state.get('current_quarter') != selected_quarter or st.session_state.get('current_year') != selected_year:
+    st.session_state.data = load_data(selected_quarter, selected_year)
+    st.session_state.current_quarter = selected_quarter
+    st.session_state.current_year = selected_year
+    st.session_state.synthesis = load_synthesis(selected_quarter, selected_year)
+
 if 'uploaded_files' not in st.session_state:
     st.session_state.uploaded_files = {}
 
-# ---------- SIDEBAR ----------
-st.sidebar.title("📋 Navigation")
-selected_dept = st.sidebar.selectbox("Select Your Department", DEPARTMENTS + ["**CORPORATE / GENERAL**"])
-st.sidebar.markdown("---")
-st.sidebar.caption("📌 **Y** = Fully Met, **N** = Not Met, **NA** = Not Applicable")
-st.sidebar.caption("📌 Provide **Narrative/Figures** – these will become the contents of your final report.")
-st.sidebar.caption("📌 Attach supporting files (PDF, Excel, Images) under each question.")
-
-# ---------- ADMIN: EXTEND QUESTIONS ----------
+# ---------- ADMIN: ADD QUESTION ----------
 with st.sidebar.expander("🔧 Admin - Add New Question (Password: admin123)"):
     admin_pass = st.text_input("Password", type="password", key="admin_pass")
     if admin_pass == "admin123":
@@ -348,26 +378,27 @@ with st.sidebar.expander("🔧 Admin - Add New Question (Password: admin123)"):
                     "Group": new_group,
                     "Question": new_q,
                     "Guidance": new_guidance,
-                    "Status": "NA",
                     "Comments": "",
                     "Narrative": "",
                     "Attachments": "",
+                    "Quarter": selected_quarter,
+                    "Year": selected_year,
                     "Last_Updated": datetime.now().strftime("%Y-%m-%d %H:%M")
                 }
                 st.session_state.data = pd.concat([st.session_state.data, pd.DataFrame([new_row])], ignore_index=True)
-                save_data(st.session_state.data)
+                save_data(st.session_state.data, selected_quarter, selected_year)
                 st.success(f"✅ Added question to {new_dept}!")
                 st.rerun()
     elif admin_pass:
         st.error("Wrong password.")
 
 st.sidebar.markdown("---")
-st.sidebar.caption(f"Data file: {DATA_FILE}")
-st.sidebar.caption(f"Last update: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+st.sidebar.caption(f"Reporting Period: {selected_quarter} {selected_year}")
 
-# ---------- DATA ENTRY (SIMPLIFIED - NO CONFUSING HEADERS) ----------
+# ---------- DATA ENTRY ----------
 st.subheader(f"📋 Checklist: {selected_dept}")
-st.caption("Answer each question below. Expand each item to see guidance and upload files.")
+st.caption(f"**Reporting Period:** {selected_quarter} {selected_year}")
+st.caption("Answer each question below. **Minimum 100 words** per narrative is required for compliance.")
 
 dept_mask = st.session_state.data["Department"] == selected_dept
 dept_data = st.session_state.data[dept_mask].copy()
@@ -377,44 +408,30 @@ if dept_data.empty:
     st.stop()
 
 with st.form(key="entry_form"):
-    updated_statuses = []
-    updated_comments = []
     updated_narratives = []
+    updated_comments = []
     updated_attachments = []
     
-    # Simple counter for questions
     q_counter = 1
     for idx, row in dept_data.iterrows():
         question = row["Question"]
         guidance = row["Guidance"]
-        current_status = row["Status"]
-        current_comment = row["Comments"]
         current_narrative = row["Narrative"]
+        current_comment = row["Comments"]
         current_attachments = row["Attachments"]
         
-        # Display as a simple expander with a number
+        word_count = count_words(current_narrative)
+        
         with st.expander(f"Q{q_counter}: {question}", expanded=False):
-            col1, col2 = st.columns([1, 2])
+            col1, col2 = st.columns([2, 1])
             with col1:
-                try:
-                    default_idx = ["Y", "N", "NA"].index(current_status)
-                except ValueError:
-                    default_idx = 2
-                status = st.selectbox(
-                    "Status",
-                    options=["Y", "N", "NA"],
-                    index=default_idx,
-                    key=f"status_{idx}",
-                    label_visibility="collapsed"
-                )
                 st.caption(f"💡 {guidance}")
-            with col2:
                 narrative = st.text_area(
-                    "Narrative / Key Figures (to be included in final report)",
+                    "Narrative / Detailed Explanation",
                     value=current_narrative,
                     key=f"narrative_{idx}",
-                    height=100,
-                    placeholder="Paste actual data, numbers, percentages, and analysis here..."
+                    height=150,
+                    placeholder="Write a detailed explanation (minimum 100 words). Include actual data, numbers, percentages, and analysis..."
                 )
                 comment = st.text_input(
                     "Additional Comments / References",
@@ -422,8 +439,16 @@ with st.form(key="entry_form"):
                     key=f"comment_{idx}",
                     placeholder="e.g., See page 5 of policy"
                 )
+            with col2:
+                new_word_count = count_words(narrative)
+                if new_word_count >= 100:
+                    st.success(f"✅ {new_word_count} words - Compliant!")
+                else:
+                    st.warning(f"⚠️ {new_word_count} / 100 words required")
+                    st.progress(new_word_count / 100)
+                
                 uploaded_file = st.file_uploader(
-                    "Attach supporting document (PDF, Excel, Image)",
+                    "Attach supporting document",
                     type=["pdf", "xlsx", "xls", "docx", "png", "jpg", "jpeg"],
                     key=f"upload_{idx}",
                     label_visibility="collapsed"
@@ -440,7 +465,6 @@ with st.form(key="entry_form"):
                 if current_attachments:
                     st.info(f"📎 Attached: {current_attachments}")
             
-            updated_statuses.append(status)
             updated_narratives.append(narrative)
             updated_comments.append(comment)
             updated_attachments.append(current_attachments)
@@ -450,20 +474,20 @@ with st.form(key="entry_form"):
     submitted = st.form_submit_button("💾 Save My Data")
     if submitted:
         for i, (idx, row) in enumerate(dept_data.iterrows()):
-            st.session_state.data.at[idx, "Status"] = updated_statuses[i]
             st.session_state.data.at[idx, "Narrative"] = updated_narratives[i]
             st.session_state.data.at[idx, "Comments"] = updated_comments[i]
             st.session_state.data.at[idx, "Attachments"] = updated_attachments[i]
             st.session_state.data.at[idx, "Last_Updated"] = datetime.now().strftime("%Y-%m-%d %H:%M")
-        save_data(st.session_state.data)
+            st.session_state.data.at[idx, "Quarter"] = selected_quarter
+            st.session_state.data.at[idx, "Year"] = selected_year
+        save_data(st.session_state.data, selected_quarter, selected_year)
         st.success("✅ Data saved successfully!")
 
-# ---------- FIXED DASHBOARD (Corrected Calculation) ----------
+# ---------- DASHBOARD ----------
 st.markdown("---")
 st.header("📊 Live Compliance Dashboard")
-
-# Information box explaining the new metric
-st.info("💡 **Compliance %** is calculated as (Yes / Total Questions). To get 100%, you must answer 'Yes' to all questions. 'NA' items do not count toward the score, encouraging full completion.")
+st.caption(f"**Reporting Period:** {selected_quarter} {selected_year}")
+st.info("💡 **Compliance %** = (Number of questions with ≥100 words) / (Total questions). You must write at least 100 words per narrative to be fully compliant.")
 
 all_depts = st.session_state.data["Department"].unique()
 summary = []
@@ -474,42 +498,28 @@ for dept in all_depts:
     
     dept_filter = st.session_state.data[st.session_state.data["Department"] == dept]
     total = len(dept_filter)
-    y_count = len(dept_filter[dept_filter["Status"] == "Y"])
-    n_count = len(dept_filter[dept_filter["Status"] == "N"])
-    na_count = len(dept_filter[dept_filter["Status"] == "NA"])
     
-    # ----- NEW STRICT COMPLIANCE METRIC -----
-    # Compliance % = Yes / Total Questions. Forces departments to answer all questions to get 100%.
-    compliance = (y_count / total) * 100 if total > 0 else 0
+    compliant_count = 0
+    for _, row in dept_filter.iterrows():
+        if count_words(row["Narrative"]) >= 100:
+            compliant_count += 1
     
-    # Completion % = (Yes + No + NA) / Total. Shows how much of the form is filled out.
-    completion = ((y_count + n_count + na_count) / total) * 100 if total > 0 else 0
-    
-    # Old "Applicable" metric (just for reference)
-    applicable_compliance = (y_count / (y_count + n_count) * 100) if (y_count + n_count) > 0 else 0
+    compliance = (compliant_count / total) * 100 if total > 0 else 0
     
     summary.append({
         "Department": dept,
-        "Yes": y_count,
-        "No": n_count,
-        "NA": na_count,
-        "Compliance % (Strict)": round(compliance, 1),   # This is the one shown in the chart
-        "Completion %": round(completion, 1),
-        "Applicable % (Y/(Y+N))": round(applicable_compliance, 1)  # Just for info
+        "Total Questions": total,
+        "✅ Compliant (≥100 words)": compliant_count,
+        "❌ Incomplete (<100 words)": total - compliant_count,
+        "Compliance %": round(compliance, 1)
     })
 
 df_summary = pd.DataFrame(summary)
-
-# Display the table
 st.dataframe(df_summary, width='stretch', hide_index=True)
+st.subheader("Overall Compliance by Department (%)")
+st.bar_chart(df_summary.set_index("Department")["Compliance %"])
 
-# Display the Bar Chart (Now using the Strict metric)
-st.subheader("Overall Compliance Progress by Department (%)")
-st.bar_chart(df_summary.set_index("Department")["Compliance % (Strict)"])
-
-st.caption("⚠️ Note: 'Applicable %' shows compliance only among answered applicable items, but the main progress bar above requires 'Yes' on ALL questions.")
-
-# ---------- NEW: ADMIN CONSOLIDATION / SYNTHESIS PANEL ----------
+# ---------- ADMIN SYNTHESIS ----------
 st.markdown("---")
 st.header("🔧 Admin Consolidation / Synthesis (for Final Report)")
 
@@ -517,10 +527,9 @@ with st.expander("📝 Admin: Synthesize Departmental Inputs into Cohesive TFRS 
     synth_pass = st.text_input("Enter Admin Password to edit synthesis", type="password", key="synth_pass")
     
     if synth_pass == "admin123":
-        st.success("✅ Admin access granted. Edit the synthesis text below. This polished text will REPLACE the raw departmental bullet points in the final Word report.")
+        st.success("✅ Admin access granted.")
         st.info("📌 **What to fill here:** Read all the departmental raw narratives shown below for each group. Then, rewrite them into a single, professional, flowing paragraph that captures the whole story of the Ministry for that TFRS section.")
         
-        # Show raw input for reference
         st.subheader("📄 Raw Departmental Inputs (For Reference)")
         for group in TFRS_GROUPS.keys():
             group_data = st.session_state.data[
@@ -536,9 +545,10 @@ with st.expander("📝 Admin: Synthesize Departmental Inputs into Cohesive TFRS 
                             for _, row in dept_group.iterrows():
                                 st.caption(f"Q: {row['Question']}")
                                 st.write(row['Narrative'] if row['Narrative'] else "⚠ No data provided.")
+                                wc = count_words(row['Narrative'])
+                                st.caption(f"Word count: {wc}")
                             st.divider()
         
-        # Synthesis Editor
         st.subheader("✍️ Write Your Polished Synthesis Paragraphs")
         st.caption("These will be used in the final report. Leave blank to fall back to raw departmental inputs.")
         
@@ -563,8 +573,8 @@ with st.expander("📝 Admin: Synthesize Departmental Inputs into Cohesive TFRS 
                     st.session_state.synthesis.at[idx[0], 'Synthesis'] = text
                 else:
                     st.session_state.synthesis = pd.concat([st.session_state.synthesis, pd.DataFrame([{'Group': group, 'Synthesis': text}])], ignore_index=True)
-            save_synthesis(st.session_state.synthesis)
-            st.success("✅ All synthesis text saved successfully! These will be used in the final report.")
+            save_synthesis(st.session_state.synthesis, selected_quarter, selected_year)
+            st.success(f"✅ All synthesis text saved for {selected_quarter} {selected_year}!")
             st.rerun()
             
     elif synth_pass:
@@ -574,7 +584,7 @@ with st.expander("📝 Admin: Synthesize Departmental Inputs into Cohesive TFRS 
 st.markdown("---")
 st.header("📄 Generate Draft TFRS 1 Report")
 
-st.warning("The report compiles narratives. If Admin Synthesis text exists, it will be used instead of raw departmental inputs for each TFRS section.")
+st.warning(f"Report will be generated for **{selected_quarter} {selected_year}**. If Admin Synthesis text exists, it will be used instead of raw departmental inputs.")
 
 if st.button("📝 Generate Consolidated Draft Report (Word)"):
     output = io.BytesIO()
@@ -583,18 +593,17 @@ if st.button("📝 Generate Consolidated Draft Report (Word)"):
         doc = Document()
         doc.add_heading('REPORT BY THOSE CHARGED WITH GOVERNANCE', 0)
         doc.add_heading('Ministry of Minerals', level=1)
-        doc.add_paragraph(f'Date: {datetime.now().strftime("%d %B %Y")}')
+        doc.add_paragraph(f'Reporting Period: {selected_quarter} {selected_year}')
+        doc.add_paragraph(f'Date Generated: {datetime.now().strftime("%d %B %Y")}')
         doc.add_paragraph('Prepared in accordance with TFRS 1 (Effective 1st January 2021)')
         doc.add_paragraph('')
         
-        # 1. Executive Summary
         doc.add_heading('1. Executive Summary', level=2)
-        doc.add_paragraph(f'Compliance status across {len(df_summary)} departments:')
+        doc.add_paragraph(f'Compliance status across {len(df_summary)} departments for {selected_quarter} {selected_year}:')
         for _, row in df_summary.iterrows():
-            doc.add_paragraph(f'• {row["Department"]}: {row["Compliance % (Strict)"]}% compliance (Yes: {row["Yes"]}, No: {row["No"]}, N/A: {row["NA"]})')
+            doc.add_paragraph(f'• {row["Department"]}: {row["Compliance %"]}% compliance ({row["✅ Compliant (≥100 words)"]} out of {row["Total Questions"]} questions met the 100-word minimum)')
         doc.add_paragraph('')
         
-        # 2. Corporate / General Section
         corp_data = st.session_state.data[st.session_state.data["Department"] == "**CORPORATE / GENERAL**"]
         if not corp_data.empty:
             doc.add_heading('2. Corporate Governance and General Disclosures', level=2)
@@ -605,7 +614,6 @@ if st.button("📝 Generate Consolidated Draft Report (Word)"):
                     doc.add_paragraph(f'Attachments: {row["Attachments"]}')
         doc.add_paragraph('')
         
-        # 3. Grouped by TFRS Sections (Using Synthesis if available)
         doc.add_heading('3. Operational and Financial Review by TFRS Section', level=2)
         synth_df = st.session_state.synthesis
         
@@ -613,14 +621,11 @@ if st.button("📝 Generate Consolidated Draft Report (Word)"):
             doc.add_heading(f'3.{list(TFRS_GROUPS.keys()).index(group)+1} {group}', level=3)
             doc.add_paragraph(TFRS_GROUPS[group])
             
-            # Check if synthesis exists for this group
             synth_row = synth_df[synth_df['Group'] == group]
             if not synth_row.empty and synth_row.iloc[0]['Synthesis'] and synth_row.iloc[0]['Synthesis'].strip():
-                # USE THE ADMIN'S POLISHED SYNTHESIS
                 doc.add_paragraph(synth_row.iloc[0]['Synthesis'], style='List Bullet')
                 doc.add_paragraph("*(This section has been consolidated by Management from departmental inputs.)*", style='List Bullet')
             else:
-                # FALLBACK TO RAW DEPARTMENTAL INPUTS
                 group_data = st.session_state.data[
                     (st.session_state.data["Group"] == group) &
                     (st.session_state.data["Department"] != "**CORPORATE / GENERAL**")
@@ -639,6 +644,8 @@ if st.button("📝 Generate Consolidated Draft Report (Word)"):
                                 doc.add_paragraph(row["Narrative"], style='List Bullet')
                             else:
                                 doc.add_paragraph('⚠ Not provided.', style='List Bullet')
+                            wc = count_words(row['Narrative'])
+                            doc.add_paragraph(f'Word count: {wc}', style='List Bullet')
                             if row["Attachments"]:
                                 doc.add_paragraph(f'Evidence: {row["Attachments"]}', style='List Bullet')
             doc.add_paragraph('')
@@ -647,9 +654,9 @@ if st.button("📝 Generate Consolidated Draft Report (Word)"):
         mime_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         file_ext = "docx"
     else:
-        # Fallback to plain text
         output.write("="*80 + "\n".encode())
         output.write("REPORT BY THOSE CHARGED WITH GOVERNANCE - MINISTRY OF MINERALS\n".encode())
+        output.write(f"Reporting Period: {selected_quarter} {selected_year}\n".encode())
         output.write(f"Date: {datetime.now().strftime('%d %B %Y')}\n".encode())
         output.write("="*80 + "\n\n".encode())
         
@@ -668,7 +675,6 @@ if st.button("📝 Generate Consolidated Draft Report (Word)"):
         for group in TFRS_GROUPS.keys():
             output.write(f"\n\n{group}\n".encode())
             output.write("="*len(group) + "\n".encode())
-            
             synth_row = synth_df[synth_df['Group'] == group]
             if not synth_row.empty and synth_row.iloc[0]['Synthesis'] and synth_row.iloc[0]['Synthesis'].strip():
                 output.write(synth_row.iloc[0]['Synthesis'].encode())
@@ -689,6 +695,8 @@ if st.button("📝 Generate Consolidated Draft Report (Word)"):
                         for _, row in dept_group.iterrows():
                             output.write(f"  - {row['Question']}\n".encode())
                             output.write(f"    {row['Narrative'] if row['Narrative'] else 'N/A'}\n".encode())
+                            wc = count_words(row['Narrative'])
+                            output.write(f"    Word count: {wc}\n".encode())
                             if row['Attachments']:
                                 output.write(f"    Evidence: {row['Attachments']}\n".encode())
         
@@ -698,7 +706,7 @@ if st.button("📝 Generate Consolidated Draft Report (Word)"):
     st.download_button(
         label=f"⬇ Download Draft Report (.{file_ext})",
         data=output.getvalue(),
-        file_name=f"TFRS1_Draft_Report_{datetime.now().strftime('%Y%m%d')}.{file_ext}",
+        file_name=f"TFRS1_Draft_Report_{selected_quarter}_{selected_year}_{datetime.now().strftime('%Y%m%d')}.{file_ext}",
         mime=mime_type
     )
-    st.success("Draft report generated! If synthesis exists, it was used instead of raw departmental data.")
+    st.success(f"Draft report generated for {selected_quarter} {selected_year}!")
