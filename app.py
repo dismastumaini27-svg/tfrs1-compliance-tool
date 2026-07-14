@@ -32,7 +32,6 @@ YEAR_DISPLAY = [
     "2025/2026", "2026/2027", "2027/2028", "2028/2029",
     "2029/2030", "2030/2031"
 ]
-# For file naming we use the starting year (e.g., "2025")
 YEAR_MAP = {disp: disp.split("/")[0] for disp in YEAR_DISPLAY}
 
 TFRS_GROUPS = {
@@ -46,10 +45,14 @@ TFRS_GROUPS = {
     "HR & Capacity Building": "Staffing, Training, Welfare, Integrity"
 }
 
-# ---------- THE OFFICIAL QUESTION LIST ----------
-# (Standard Submission for every department)
+# ------------------------------------------------------------
+# THE FULL QUESTION LIST – ALL DEPARTMENTS COVERED
+# Format: (Department, TFRS_Group, Question, Evidence/Guidance)
+# ------------------------------------------------------------
 QUESTION_LIST = []
 
+# --- 1. STANDARD SUBMISSION PACKAGE (Section 5 of the matrix) ---
+# Applies to EVERY department
 for dept in DEPARTMENTS:
     for q_text, g_text in [
         ("Provide a short narrative summary of achievements, challenges, and priorities for the year.",
@@ -67,16 +70,211 @@ for dept in DEPARTMENTS:
     ]:
         QUESTION_LIST.append((dept, "Standard Submission", q_text, g_text))
 
-# --- Specific questions per department (full list from the official matrix) ---
-# (I am including the full list for completeness – you can expand as needed)
-# For brevity in the answer, I will keep the structure; the full code will be provided.
+# --- 2. ADMINISTRATION AND HUMAN RESOURCES (1001) ---
+hr_qs = [
+    ("Organisational Profile & Strategy",
+     "Submit the approved organisational profile, mandate, vision, mission, and structure.",
+     "Submit: Approved organisation structure, establishment records, circulars, official mandate documents."),
+    ("HR & Capacity Building",
+     "Submit detailed HR data: staff establishment, filled/vacant posts, recruitment, transfers, retirements, deaths, promotions, gender profile, training, capacity gaps, welfare matters, staff claims, disciplinary matters, HIV/AIDS and NCD initiatives.",
+     "Submit: HR registers, approved establishment, training reports, PEPMIS reports, minutes, attendance sheets, welfare records, HoD certification."),
+    ("HR & Capacity Building",
+     "Report on the risk of 'Shortage of skilled staff' including vacancy analysis, training plan, recruitment needs, and capacity gaps.",
+     "Submit: Vacancy analysis, training plan, recruitment needs, capacity gap assessment."),
+    ("Governance, Risk & Compliance",
+     "Submit management meetings held, key decisions made, implementation progress, and pending decisions.",
+     "Submit: Meeting minutes, attendance registers, action trackers."),
+    ("Governance, Risk & Compliance",
+     "Report on integrity, ethics, and compliance: Integrity initiatives, disciplinary matters, ethics compliance, fraud-prevention controls, and staff awareness activities.",
+     "Submit: Integrity committee records, training reports, disciplinary registers, compliance reports.")
+]
+for group, q, g in hr_qs:
+    QUESTION_LIST.append(("Administration and Human Resources (1001)", group, q, g))
 
-# ... (insert all the specific department questions here as before) ...
+# --- 3. FINANCE AND ACCOUNTS UNIT (1002) ---
+fin_qs = [
+    ("Financial Governance",
+     "Submit revenue collection data: targets, actual revenue, collection efficiency, variance explanations, arrears, and reconciliation with official systems.",
+     "Submit: MUSE/IFMS reports, revenue collection schedules, bank/treasury confirmations, reconciliation reports."),
+    ("Financial Governance",
+     "Submit the budget execution and variance analysis: releases, expenditure, commitments, payables, receivables, deposits, imprests, assets, WIP, and liabilities.",
+     "Submit: MUSE/IFMS reports, ledgers, bank confirmations, reconciliation statements, commitment register, pending bills."),
+    ("Financial Governance",
+     "Submit financial statements and notes: Statement inputs, notes, disclosures, comparative figures, commitments, pending bills, assets, WIP, liabilities, and confirmations.",
+     "Submit: Financial statements, schedules, ledgers, confirmations, asset register, commitment register."),
+    ("Financial Governance",
+     "Submit the financial control environment: IPSAS compliance, reconciliations, financial risks, and financial reporting status.",
+     "Submit: Financial statements, ledgers, reconciliations, audit files, IPSAS disclosure schedules."),
+    ("Financial Governance",
+     "Submit CAG Audit Issues and Responses: Audit issues, management responses, corrective actions, implementation status, and evidence for closure.",
+     "Submit: CAG report, management letter, audit action plan, supporting closure evidence."),
+    ("Financial Governance",
+     "Report on the risk of 'Unreliable or untimely financial statements': Reconciliation status, reporting timetable, responsible officers, and audit trail.",
+     "Submit: Reconciliation status, reporting timetable, responsible officers, audit trail.")
+]
+for group, q, g in fin_qs:
+    QUESTION_LIST.append(("Finance and Accounts Unit (1002)", group, q, g))
 
-# For the full code, please refer to the previous answer where the entire list is included.
-# In this version, I will assume the full list is present.
+# --- 4. POLICY AND PLANNING DIVISION (1003) ---
+plan_qs = [
+    ("Organisational Profile & Strategy",
+     "Submit the Minister's statement inputs: Sector priorities, strategic direction, major achievements, challenges, reforms, and forward-looking commitments.",
+     "Submit: Approved annual performance reports, sector statistics, speech inputs, communication clearance."),
+    ("Organisational Profile & Strategy",
+     "Submit the Permanent Secretary's statement: Institutional performance, implementation of plans, revenue performance, infrastructure, reforms, HR capacity, controls, and priorities.",
+     "Submit: Consolidated performance report, management meeting records, certified inputs from all units."),
+    ("Organisational Profile & Strategy",
+     "Submit strategy and performance overview: Strategic plan implementation, MTEF performance, annual plan results, KPIs, target vs actual, and variance explanations.",
+     "Submit: Strategic plan, annual plan, MTEF, quarterly implementation reports, KPI validation records."),
+    ("Organisational Profile & Strategy",
+     "Submit strategic plan implementation status: Objectives implemented, activities completed, outputs delivered, delayed activities, and reasons.",
+     "Submit: Annual plan implementation report, performance dashboard, M&E validation notes."),
+    ("Organisational Profile & Strategy",
+     "Submit the governance and oversight report: Governance structures, committees, management decisions, implementation status, and unresolved governance issues.",
+     "Submit: Minutes, attendance sheets, decision registers, implementation follow-up reports."),
+    ("Governance, Risk & Compliance",
+     "Submit the risk management framework: Risk register, risk ratings, controls, mitigation actions, residual risks, and unresolved high-risk items.",
+     "Submit: Risk register, action plans, M&E/risk review minutes, supporting evidence."),
+    ("Governance, Risk & Compliance",
+     "Report on the risk of 'Outdated or incomplete risk register' with updated risk register, ratings, controls, residual risk, and action owners.",
+     "Submit: Updated risk register with ratings, controls, residual risk, and action owners."),
+    ("Governance, Risk & Compliance",
+     "Report on the risk of 'Inaccurate budgeting or weak budget execution': Budget variance analysis, reallocation records, and planning corrective action.",
+     "Submit: Budget variance analysis, reallocation records, planning corrective action.")
+]
+for group, q, g in plan_qs:
+    QUESTION_LIST.append(("Policy and Planning Division (1003)", group, q, g))
 
-# Build the dictionary
+# --- 5. INTERNAL AUDIT UNIT (1004) ---
+audit_qs = [
+    ("Governance, Risk & Compliance",
+     "Submit the annual audit plan and charter: Scope coverage, number of planned audits vs completed.",
+     "Submit: Audit plan, audit reports, audit committee minutes."),
+    ("Governance, Risk & Compliance",
+     "Submit key audit findings, recommendations, management responses, and implementation status.",
+     "Submit: Audit reports, management responses, action tracker, verification evidence."),
+    ("Governance, Risk & Compliance",
+     "Submit internal controls and audit committee matters: Internal control findings, audit committee meetings, recommendations, and management responses.",
+     "Submit: Audit reports, audit committee minutes, management responses, follow-up tracker."),
+    ("Governance, Risk & Compliance",
+     "Report on the risk of 'Internal audit independence or control weaknesses' including internal audit charter status, audit committee minutes, and management responses.",
+     "Submit: Internal audit charter, audit committee minutes, management responses.")
+]
+for group, q, g in audit_qs:
+    QUESTION_LIST.append(("Internal Audit Unit (1004)", group, q, g))
+
+# --- 6. LEGAL SERVICES UNIT (1005) ---
+legal_qs = [
+    ("Governance, Risk & Compliance",
+     "Submit legal and regulatory reforms: Mining law amendments, regulations, directives, legal compliance, legal opinions, and regulatory implementation status.",
+     "Submit: Acts, regulations, legal opinions, circulars, gazette notices, implementation reports."),
+    ("Governance, Risk & Compliance",
+     "Submit litigation, claims, and contingent liabilities: Court cases, claims, probability of loss, provisions, contingent liabilities, legal commitments, and subsequent events.",
+     "Submit: Litigation register, case files, legal opinions, claims schedules, court documents."),
+    ("Governance, Risk & Compliance",
+     "Report on the risk of 'Poor enforcement of mining regulations' including legal reforms, enforcement records, compliance reports, and awareness activities.",
+     "Submit: Legal reforms, enforcement records, compliance reports, awareness activities.")
+]
+for group, q, g in legal_qs:
+    QUESTION_LIST.append(("Legal Services Unit (1005)", group, q, g))
+
+# --- 7. GOVERNMENT COMMUNICATION UNIT (1006) ---
+comm_qs = [
+    ("Organisational Profile & Strategy",
+     "Submit transparency, public disclosure, and stakeholder communication: Media engagement, public disclosure, stakeholder communication, publications, social media/website analytics, and feedback.",
+     "Submit: Media reports, website analytics, press releases, publications, stakeholder meeting records."),
+    ("Organisational Profile & Strategy",
+     "Report on the risk of 'Poor communication and stakeholder tension' including communication plan, stakeholder engagement log, and feedback handling.",
+     "Submit: Communication plan, stakeholder engagement log, feedback handling records.")
+]
+for group, q, g in comm_qs:
+    QUESTION_LIST.append(("Government Communication Unit (1006)", group, q, g))
+
+# --- 8. PROCUREMENT MANAGEMENT UNIT (1007) ---
+proc_qs = [
+    ("Infrastructure & Procurement",
+     "Submit infrastructure projects: Major construction, office infrastructure, contract value, physical progress, financial progress, delays, and completion status.",
+     "Submit: Contracts, IPCs, completion certificates, site reports, procurement files, payment records."),
+    ("Infrastructure & Procurement",
+     "Submit procurement of vehicles, equipment, contracts, and LPOs: Procurement plan implementation, tenders, contracts, LPOs, framework contracts, variations, guarantees, and delays.",
+     "Submit: APP, NeST reports, tender board minutes, contract files, LPOs, guarantees, delivery notes."),
+    ("Infrastructure & Procurement",
+     "Submit Ministerial Tender Board matters: Tender board meetings, approvals, procurement decisions, contract awards, pending procurements, and procurement risks.",
+     "Submit: Tender board minutes, evaluation reports, approvals, contract award notices."),
+    ("Governance, Risk & Compliance",
+     "Report on the risk of 'Leakage of tender information' including tender controls, confidentiality declarations, board minutes, and investigation reports.",
+     "Submit: Tender controls, confidentiality declarations, board minutes, investigation reports."),
+    ("Governance, Risk & Compliance",
+     "Report on the risk of 'Delays in procurement' including delayed procurements, causes, impact, and mitigation plan.",
+     "Submit: Delayed procurements, causes, impact, mitigation plan.")
+]
+for group, q, g in proc_qs:
+    QUESTION_LIST.append(("Procurement Management Unit (1007)", group, q, g))
+
+# --- 9. MONITORING AND EVALUATION UNIT (1008) ---
+me_qs = [
+    ("Sector Performance & KPIs",
+     "Submit KPI validation, project monitoring, data quality, and performance evidence.",
+     "Submit: M&E reports, field visit reports, data validation sheets, performance dashboards, evaluation reports, evidence validation notes."),
+    ("Sector Performance & KPIs",
+     "Report on the risk of 'Poor statistical data integrity' including data validation procedures, quality checks, methodology notes, and sign-offs.",
+     "Submit: Data validation procedures, quality checks, methodology notes, sign-offs.")
+]
+for group, q, g in me_qs:
+    QUESTION_LIST.append(("Monitoring and Evaluation Unit (1008)", group, q, g))
+
+# --- 10. MANAGEMENT INFORMATION SYSTEMS UNIT (1009) ---
+ict_qs = [
+    ("ICT & Digital Transformation",
+     "Submit ICT systems, digital transformation, and data security: Systems used, uptime, users supported, incidents, backups, cybersecurity, licences, digital projects, and data governance.",
+     "Submit: System inventory, incident logs, uptime reports, backup reports, licence register, user support logs, DR plan, ICT project reports."),
+    ("ICT & Digital Transformation",
+     "Submit Ministerial ICT Steering Committee matters: ICT governance decisions, ICT projects, system risks, digital transformation, and implementation status.",
+     "Submit: Committee minutes, project reports, ICT risk reports, implementation trackers."),
+    ("ICT & Digital Transformation",
+     "Report on the risk of 'Loss of data, downtime or system failure' including backup status, uptime, incident reports, DR arrangements, and cybersecurity controls.",
+     "Submit: Backup status, uptime, incident reports, DR arrangements, cybersecurity controls.")
+]
+for group, q, g in ict_qs:
+    QUESTION_LIST.append(("Management Information Systems Unit (1009)", group, q, g))
+
+# --- 11. MINERALS DIVISION (2001) ---
+min_qs = [
+    ("Sector Performance & KPIs",
+     "Submit sector KPIs: GDP contribution, mineral production, mineral buying centres, trained miners, production statistics, training data, buying centres, licences, market performance, and validation.",
+     "Submit: Sector reports, Mining Commission/official records, M&E sign-off, data methodology notes."),
+    ("Sector Performance & KPIs",
+     "Submit small-scale mining and ASM development: ASM licences, training, loans, formalisation, safety, compliance, markets, and productivity support.",
+     "Submit: Training reports, licence schedules, loan schedules, attendance sheets, inspection reports, photos."),
+    ("Sector Performance & KPIs",
+     "Submit sustainability, ESG, and climate-related matters: Environmental management, rehabilitation, ASM safety, CSR, local content, climate-related risks, and financial implications.",
+     "Submit: Inspection reports, ESG schedules, CSR reports, environmental compliance records, risk register, financial schedules."),
+    ("Sector Performance & KPIs",
+     "Submit detailed mineral sector performance: Mining sector GDP contribution, mineral production (tonnages/value), mineral revenue, licences, mineral markets, ASM support, local content, CSR, value addition, strategic minerals, environmental management, rehabilitation, mining inspections, illegal mining, ESG/climate data.",
+     "Submit: Sector reports, inspection reports, licence schedules, mineral production records, CSR reports, local content reports, environmental compliance records, data methodology note."),
+    ("Sector Performance & KPIs",
+     "Report on the risk of 'Weak inter-agency coordination' including coordination meetings, stakeholder engagement records, and action plans.",
+     "Submit: Coordination meetings, stakeholder engagement records, action plans."),
+    ("Sector Performance & KPIs",
+     "Report on the risk of 'Informal/illegal mining operations' including inspection reports, enforcement actions, stakeholder awareness, and legal updates.",
+     "Submit: Inspection reports, enforcement actions, stakeholder awareness, legal updates."),
+    ("Sector Performance & KPIs",
+     "Report on the risk of 'Incomplete revenue data from mineral rights holders' including reconciled revenue and production data, data gaps, and corrective action.",
+     "Submit: Reconciled revenue and production data, data gaps, corrective action."),
+    ("Sector Performance & KPIs",
+     "Report on the risk of 'Mineral smuggling and revenue leakage' including control measures, enforcement reports, and risk mitigation actions.",
+     "Submit: Control measures, enforcement reports, risk mitigation actions."),
+    ("Sector Performance & KPIs",
+     "Report on the risk of 'Environmental pollution and mine rehabilitation issues' including inspection reports, rehabilitation plans, compliance letters, and ESG schedules.",
+     "Submit: Inspection reports, rehabilitation plans, compliance letters, ESG schedules."),
+    ("Sector Performance & KPIs",
+     "Report on the risk of 'Low ASM productivity' including training, loans, market access, safety support, and productivity indicators.",
+     "Submit: Training, loans, market access, safety support, productivity indicators.")
+]
+for group, q, g in min_qs:
+    QUESTION_LIST.append(("Minerals Division (2001)", group, q, g))
+
+# Build the dictionary used by the app
 DEPARTMENT_QUESTIONS = {}
 for dept, group, q, g in QUESTION_LIST:
     DEPARTMENT_QUESTIONS.setdefault(dept, []).append(
@@ -84,7 +282,7 @@ for dept, group, q, g in QUESTION_LIST:
     )
 
 # ------------------------------------------------------------
-# FILE HELPERS (use the starting year as key)
+# FILE HELPERS
 # ------------------------------------------------------------
 DATA_FILE = "tfrs_data"
 SYNTHESIS_FILE = "synthesis_data"
@@ -177,7 +375,7 @@ try:
     # Sidebar
     st.sidebar.title("📋 Reporting Period")
     selected_display = st.sidebar.selectbox("Select Financial Year", YEAR_DISPLAY)
-    selected_year = YEAR_MAP[selected_display]   # e.g., "2025"
+    selected_year = YEAR_MAP[selected_display]
 
     st.sidebar.markdown("---")
     st.sidebar.title("📌 Division/Unit")
